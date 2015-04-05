@@ -78,10 +78,12 @@ class EmailList {
 	
 	/**
 	 * Password
-	 * Hashed with password_hash()
+	 * Encrypted string.
 	 * @var string
 	 */
 	private $password = '';
+	
+	private $processedDir = '';
 	
 	/**
 	 * Class constructor.
@@ -98,7 +100,15 @@ class EmailList {
 			$this->host = $row['Host'];
 			$this->port = $row['Port'];
 			$this->administratoremail = $row['AdministratorEmail'];
+			$this->processedDir = $row['ProcessedDir'];
 		}
+	}
+	
+	public function deleteSubscriber(ListSubscriber &$subscriber) {
+		$watcher = ObjWatcher::instance();
+		$watcher->remove($subscriber);
+		ListSubscriberDataManager::delete($subscriber->getID());
+		unset($subscriber);
 	}
 	
 	public function getAdministratorEmail() {
@@ -139,6 +149,10 @@ class EmailList {
 		return $this->port;
 	}
 	
+	public function getProcessedDir($raw = false) {
+		return $raw? $this->processedDir : html_specialchars($this->processedDir);
+	}
+	
 	public function getSubscribers() {
 		$this->loadSubscribers();
 		return $this->subscribers;
@@ -157,7 +171,8 @@ class EmailList {
 				$this->password,
 				$this->host,
 				$this->port,
-				$this->administratoremail
+				$this->administratoremail,
+				$this->processedDir,
 		));
 	}
 	
@@ -246,6 +261,17 @@ class EmailList {
 	}
 	
 	/**
+	 * Set the directory for the email to be moved to once processed
+	 * 
+	 * e.g. [Gmail]/Trash
+	 * 
+	 * @param string $processedDir
+	 */
+	public function setProcessedDir($processedDir) {
+		$this->processedDir = $processedDir;
+	}
+	
+	/**
 	 * Update in the database.
 	 */
 	private function update() {
@@ -258,6 +284,7 @@ class EmailList {
 			$this->host,
 			$this->port,
 			$this->administratoremail,
+			$this->processedDir,
 			$this->id
 		));
 	}
@@ -265,12 +292,12 @@ class EmailList {
 	// http://blog.justin.kelly.org.au/simple-mcrypt-encrypt-decrypt-functions-for-p/
 	private function simple_encrypt($text)
 	{
-		return trim(base64_encode(mcrypt_encrypt(MCRYPT_RIJNDAEL_256, Prefs::SALT, $text, MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND))));
+		return trim(base64_encode(mcrypt_encrypt(MCRYPT_RIJNDAEL_256, Prefs::SALT_EMAIL_LISTS, $text, MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND))));
 	}
 	
 	private function simple_decrypt($text)
 	{
-		return trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_256, Prefs::SALT, base64_decode($text), MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND)));
+		return trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_256, Prefs::SALT_EMAIL_LISTS, base64_decode($text), MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND)));
 	}
 	
 	

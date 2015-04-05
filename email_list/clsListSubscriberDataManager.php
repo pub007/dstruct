@@ -12,6 +12,8 @@ class ListSubscriberDataManager extends Base {
 			FROM listsubscriber
 			';
 	
+	private static $delete = 'DELETE FROM listsubscriber WHERE ListSubscriberID = ? LIMIT 1';
+	
 	private static $insert = 'INSERT INTO listsubscriber (EmailListID, Name, EmailAddress, Active, VerifyCode, VerifyPause)
 			VALUES (?, ?, ?, ?, ?, ?)';
 	
@@ -42,6 +44,10 @@ class ListSubscriberDataManager extends Base {
 		self::doStatement(self::$insert, $data);
 		$selector = DBSelector::getInstance();
 		return $selector->getConnection()->lastInsertID();
+	}
+	
+	public function delete($id) {
+		$rs = self::doStatement(self::$delete, array($id));
 	}
 	
 	public function load($id) {

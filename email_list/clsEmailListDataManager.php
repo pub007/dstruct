@@ -11,11 +11,12 @@ class EmailListDataManager extends Base {
 			Password,
 			Host,
 			Port,
-			AdministratorEmail
+			AdministratorEmail,
+			ProcessedDir
 		 FROM emaillist
 		 ';
 	
-	private static $insert = 'INSERT INTO emaillist (Name, EmailAddress, IMAPHost, Username, Password, Host, Port, AdministratorEmail) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+	private static $insert = 'INSERT INTO emaillist (Name, EmailAddress, IMAPHost, Username, Password, Host, Port, AdministratorEmail, ProcessedDir) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
 	
 	private static $load_by_id = 'WHERE EmailListID = ?';
 	
@@ -27,7 +28,8 @@ class EmailListDataManager extends Base {
 			Password = ?,
 			Host = ?,
 			Port = ?,
-			AdministratorEmail = ?
+			AdministratorEmail = ?,
+			ProcessedDir = ?
 			WHERE EmailListID = ?';
 	
 	public static function insert($data) {
