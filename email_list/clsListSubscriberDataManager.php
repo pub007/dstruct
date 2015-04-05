@@ -20,6 +20,11 @@ class ListSubscriberDataManager extends Base {
 	private static $load = 
 		'WHERE ListSubscriberID = ?';
 	
+	private static $load_active_by_list =
+	"WHERE EmailListID = ?
+		 AND Active < NOW()
+		 AND Active <> '1970-01-01 00:00:01'";
+	
 	private static $load_by_email =
 		'WHERE EmailAddress = ?
 		 AND EmailListID = ?';
@@ -27,10 +32,8 @@ class ListSubscriberDataManager extends Base {
 	private static $load_by_list =
 		'WHERE EmailListID = ?';
 	
-	private static $load_active_by_list =
-		"WHERE EmailListID = ?
-		 AND Active < NOW()
-		 AND Active <> '1970-01-01 00:00:01'";
+	private static $load_by_verify_code =
+		'WHERE VerifyCode = ?';
 	
 	private static $update = 'UPDATE listsubscriber
 			SET Name = ?,
@@ -67,6 +70,11 @@ class ListSubscriberDataManager extends Base {
 	
 	public function loadByList($id) {
 		$rs = self::doStatement(self::$sf . self::$load_by_list, array($id));
+		return new DBIterator($rs);
+	}
+	
+	public function loadByVerifyCode($code) {
+		$rs = self::doStatement(self::$sf . self::$load_by_verify_code, array($code));
 		return new DBIterator($rs);
 	}
 	

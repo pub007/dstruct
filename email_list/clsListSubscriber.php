@@ -2,6 +2,11 @@
 
 class ListSubscriber {
 	
+	/**
+	 * Is subscriber active?
+	 *
+	 * @var integer uts
+	 */
 	private $active = 0;
 	private $emailaddress = '';
 	private $id;
@@ -75,8 +80,8 @@ class ListSubscriber {
 	 * @return boolean
 	 */
 	public function isActive() {
-		if ($this->active == 0) {return false;}
-		return ($this->active < time());
+		if ($this->active == 0) {return false;} // may have subbed, but not verified
+		return ($this->active < time()); // could be paused until a certain time
 	}
 	
 	/////////  WARNING - NEEDS CHANGING AS NEED TO PICK WITH LIST and ADDRESS AS MAY BE MEMBER OF MORE THAN ONE LIST!!!! ///////////////////////////////
@@ -150,6 +155,15 @@ class ListSubscriber {
 		($this->id)? $this->update() : $this->insert();
 	}
 	
+	/**
+	 * Set subscriber as active
+	 * 
+	 * A UTS which indicates whether the subscriber is active or suspended.
+	 * UTS > now is a temporary suspension and isActive() should return false.
+	 * NOTE: If the UTS is 0, the subscriber may have been manually de-activated
+	 * but should normally be deleted if the user unsubscribes.
+	 * @param integer $active UTS
+	 */
 	public function setActive($active) {
 		$this->active = $active;
 	}
@@ -186,7 +200,7 @@ class ListSubscriber {
 	}
 	
 	public function verify() {
-		$this->active != $this->active; // toggle active flag
+		$this->active = time();
 		$this->verifycode = uniqid(); // generate a new code
 		$this->save(); // prevent getting out of sync
 	}
