@@ -39,7 +39,7 @@ public static function currency($val, $trimdecimals = false, $precision = 2, $sy
 	if ($precision !== false) {$val = Calculate::roundDecimal($val, $precision, $decsep);}
 	$num = number_format($val, $precision, $decsep, $thousep);
 	if ($trimdecimals) {
-		// needs improving (a lot)!!
+		// TODO: needs improving (a lot)!!
 		if (substr($num, strlen($num)-3) == '.00') {$num = substr($num, 0, strlen($num)-3);}
 	}
 	return $symbol . $num;
@@ -51,6 +51,7 @@ public static function currency($val, $trimdecimals = false, $precision = 2, $sy
  * For example, 1024 bytes --> 1kb
  * @param integer $bytes
  * @return boolean|number|string
+ * @author unknown
  */
 public static function dataSize($bytes) {
 	//CHECK TO MAKE SURE A positive integer was provided.
@@ -65,6 +66,36 @@ public static function dataSize($bytes) {
 	$output = sprintf('%.2f '.$s[$e], ($bytes/pow(1024, floor($e))));
 
 	return $output;
+}
+
+/**
+ * Format HTML Entities with UTF-8
+ * 
+ * As of PHP 5.4, UTF-8 is default
+ * Use as a normal static method, or pass-by-ref:
+ * $enc = Format::he($str); // normal
+ * Format::he($enc); // pass-by-ref
+ * @param string $str
+ * @return string
+ */
+public static function he(&$str) {
+    $str = htmlentities($str, ENT_QUOTES, 'UTF-8');
+    return $str;
+}
+
+/**
+ * Format HTML Special Characters with UTF-8
+ *
+ * As of PHP 5.4, UTF-8 is default
+ * Use as a normal static method, or pass-by-ref:
+ * $enc = Format::hsc($str); // normal
+ * Format::hsc($enc); // pass-by-ref
+ * @param string $str
+ * @return string
+ */
+public static function hsc(&$str) {
+    $str = htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
+    return $str;
 }
 
 /**
