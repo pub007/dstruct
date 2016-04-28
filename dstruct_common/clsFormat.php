@@ -166,8 +166,7 @@ public static function orderedDate($uts = false) {
  *@param string $class CSS class for the message box
  *@return string
  */
-public static function asMessage($messages, $class = 'error')
-{
+public static function asMessage($messages, $class = 'error') {
 	if ($messages == false) {return;}
 	if (is_array($messages)) {
 		$output = "<ul class='message $class'>\n";

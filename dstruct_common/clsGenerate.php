@@ -54,6 +54,35 @@ private function __construct() {
 }
 
 /**
+ * Encrypt text
+ * 
+ * Suitable for encryption. Only text which needs to be decrypted should be
+ * passed through this method.
+ * Passwords should be one-way hashed if possible, not encrypted.
+ * @param string $text
+ * @return string
+ * @link http://blog.justin.kelly.org.au/simple-mcrypt-encrypt-decrypt-functions-for-p/
+ * @see Generate::decrypt() 
+ * @todo Check return / errors with non-text input
+ */
+public static function encrypt($text) {
+    return trim(base64_encode(mcrypt_encrypt(MCRYPT_RIJNDAEL_256, Prefs::SALT_EMAIL_LISTS, $text, MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND))));
+}
+
+/**
+ * Decrypt text
+ *
+ * @param string $text
+ * @return string
+ * @link http://blog.justin.kelly.org.au/simple-mcrypt-encrypt-decrypt-functions-for-p/
+ * @see Generate::encrypt()
+ * @todo Check return / errors with non-text input
+ */
+public static function decrypt($text) {
+    return trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_256, Prefs::SALT_EMAIL_LISTS, base64_decode($text), MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND)));
+}
+
+/**
  * Generate array of ASCII from string.
  * @param string $str
  * @return array

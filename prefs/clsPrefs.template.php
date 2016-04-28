@@ -89,6 +89,13 @@ const DB_CACHE = 'appcache';
 const CACHE_DEFAULT = 'APC';
 
 /**
+ * Enable script timing
+ * If this is true, then microtime() is available from Prefs with key: dstruct_timer_start
+ * @var bool
+ */
+const DSTRUCT_TIMER = false;
+
+/**
  * Define available Memcache servers
  * Comma separated list of available servers to be used
  * by the framework cache.

@@ -228,8 +228,7 @@ public static function isGoogleAnalyticsKey($key) {
  *
  *PHP's built-in is_numeric() function also allows some more exotic values
  *such as hex, leading + chars and scientific notation.<br />
- *PHP's ctype_digit() also checks type and requires an int... this can
- *cause validation failures, particularly when using data from forms.
+ *PHP's ctype_digit() requires a string and only validates integers.
  *@param mixed $value String or Int to test
  *@param boolean $allowdecimal Allow decimal places
  *@param boolean $allowsigned Allow values with negative sign char

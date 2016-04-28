@@ -5,14 +5,15 @@
 /**
  *
  */
-// set an app root - equivalent to Server.Mappath in ASP
 define('APP_ROOT', realpath(dirname(__FILE__) . '/../..//') . '/');
 
 require_once APP_ROOT.'lib/DStruct/prefs/clsPrefs.php';
 $dstruct_prefs = Prefs::getInstance();
 
-// if doing page timing, otherwise comment out. Misses the initial setup so will not be completely accurate
-$dstruct_prefs->set('dstruct_timer_start', microtime(true));
+// define DSTRUCT_TIMER as true to initiate timing. Misses the initial setup so will not be completely accurate
+if (defined('Prefs::DSTRUCT_TIMER') && Prefs::DSTRUCT_TIMER) {
+    $dstruct_prefs->set('dstruct_timer_start', microtime(true));
+}
 
 if (defined('Prefs::ERROR_DEFAULT_RECIPIENT' && Prefs::ERROR_DEFAULT_RECIPIENT)) {
 	register_shutdown_function('dstruct_shutdown_fn'); // do this as early as possible to help find errors
@@ -62,8 +63,7 @@ unset($dstruct_prefs);
  * @see Prefs::DEV
  */
 function dstruct_shutdown_fn() {
-	if(is_null($e = error_get_last()) === false)
-	{
+	if(is_null($e = error_get_last()) === false) {
 		require_once APP_ROOT.'lib/DStruct/prefs/clsPrefs.php';
 		
 		$prefs = Prefs::getInstance();
@@ -110,7 +110,7 @@ function dstruct_autoloader($class_name) {
 	$prefs = Prefs::getInstance();
 	$cache = $prefs->get('cache');
 	
-	$key = Prefs::APP_NAME . '_autoldr_' . $class_name;
+	$key = Prefs::APP_NAME . "_autoldr_$class_name";
 	
 	if ($cache->hasServer()) {
 		if ($path = $cache->get($key)) {
@@ -123,7 +123,7 @@ function dstruct_autoloader($class_name) {
    
 	//for each directory
 	foreach($directories as $directory) {
-		$path = APP_ROOT.'lib/'.$directory.'/cls'.$class_name . '.php';
+		$path = APP_ROOT."lib/$directory/cls$class_name.php";
 		if(file_exists($path)) {
 			require_once($path);
 			if ($cache->hasServer()) {$cache->set($key, $path);}
