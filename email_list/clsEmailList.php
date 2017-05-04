@@ -11,175 +11,107 @@
  */
 class EmailList {
 	
-	/**
-	 * Active subscribers to the list
-	 * @var mixed
-	 */
-	private $activesubscribers;
-	
-	/**
-	 * Email address to receive admin notices
-	 * @var string
-	 */
-	private $administratoremail = '';
-	
-	/**
-	 * Email address of the list
-	 * @var string
-	 */
-	private $emailaddress = '';
-	
-	/**
-	 * Email List ID.
-	 * @var integer
-	 */
-	private $id;
-	
-	/**
-	 * String to connect to IMAP host
-	 * e.g. {imap.zoho.com:993/imap/ssl}INBOX
-	 * @var String
-	 */
-	private $imaphost = '';
-	
-	/**
-	 * Host for the list
-	 * e.g. smtp.example.com
-	 * Do not include port as there is a separate variable
-	 * @var string
-	 */
-	private $host = '';
-	
-	/**
-	 * Name of the list
-	 * @var string
-	 */
-	private $name = '';
-
-	/**
-	 * SMTP port number
-	 * @var int
-	 */
-	private $port = 0;
-	
-	/**
-	 * Subscribers for this list
-	 * @var mixed
-	 */
-	private $subscribers;
-	
-	/**
-	 * IMAP / SMTP username
-	 * Assumed to be the same... otherwise we have problems (or
-	 * at least need another field).
-	 * @var string
-	 */
-	private $username = '';
-	
-	/**
-	 * Password
-	 * Encrypted string.
-	 * @var string
-	 */
-	private $password = '';
-	
-	private $processedDir = '';
-	
+    private $data = array(
+        'id'=>null,
+        'Name'=>null,
+        'EmailAddress'=>null,
+        'IMAPHost'=>null,
+        'Username'=>null,
+        'Password'=>null,
+        'Host'=>null,
+        'Port'=>null,
+        'AdministratorEmail'=>null,
+        'ProcessedDir'=>null,
+    );
+    private $cs = null; // list subscribers object
+    
 	/**
 	 * Class constructor.
 	 * @param array $row Information to populate object.
 	 */
 	public function __construct($row = false) {
 		if ($row != false) {
-			$this->id = $row['EmailListID'];
-			$this->name = $row['Name'];
-			$this->emailaddress = $row['EmailAddress'];
-			$this->imaphost = $row['IMAPHost'];
-			$this->username = $row['Username'];
-			$this->password = $row['Password'];
-			$this->host = $row['Host'];
-			$this->port = $row['Port'];
-			$this->administratoremail = $row['AdministratorEmail'];
-			$this->processedDir = $row['ProcessedDir'];
+			$this->data = $row;
 		}
+	}
+	
+    public function __toString() {
+	    return print_r($this->data, true);
 	}
 	
 	public function deleteSubscriber(ListSubscriber &$subscriber) {
 		$watcher = ObjWatcher::instance();
 		$watcher->remove($subscriber);
 		ListSubscriberDataManager::delete($subscriber->getID());
+		$this->removeActiveSubscriber($subscriber);
 		unset($subscriber);
 	}
 	
+	// TODO: Test this function
+	// Why is this in own method?
+	protected function removeActiveSubscriber(ListSubscriber $subscriber) {
+	    $this->cs['activesubscribers']->remove($subscriber);
+	}
+	
 	public function getAdministratorEmail() {
-		return $this->administratoremail;
+		return $this->data['AdministratorEmail'];
 	}
 	
 	public function getActiveSubscribers() {
 		$this->loadActiveSubscribers();
-		return $this->activesubscribers;
+		return $this->cs['ActiveSubscribers'];
 	}
 	
 	public function  getEmailAddress() {
-		return $this->emailaddress;
+		return $this->data['EmailAddress'];
 	}
 	
 	public function getHost() {
-		return $this->host;
+		return $this->data['Host'];
 	}
 	
 	public function getID() {
-		return $this->id;
+		return (isset($this->data['id']))? $this->data['id'] : false;
 	}
 	
 	public function getIMAPHost($raw = false) {
-		return $raw? $this->imaphost : html_specialchars($this->imaphost);
+		return $raw? $this->data['IMAPHost'] : html_specialchars($this->data['IMAPHost']);
 	}
 	
 	public function getName($raw = false) {
-		return $raw? $this->name : html_specialchars($this->name);
+		return $raw? $this->data['Name'] : html_specialchars($this->data['Name']);
 	}
 	
 	public function getPassword($raw = false) {
-		$password = $this->simple_decrypt($this->password);
+		$password = Generate::decrypt($this->data['Password']);
 		return $raw? $password : html_specialchars($password);
 	}
 	
 	public function getPort() {
-		return $this->port;
+		return $this->data['Port'];
 	}
 	
 	public function getProcessedDir($raw = false) {
-		return $raw? $this->processedDir : html_specialchars($this->processedDir);
+		return $raw? $this->data['ProcessedDir'] : html_specialchars($this->data['ProcessedDir']);
 	}
 	
 	public function getSubscribers() {
 		$this->loadSubscribers();
-		return $this->subscribers;
+		return $this->cs['subscribers'];
 	}
 	
 	public function getUsername ($raw = false) {
-		return $raw? $this->username : html_specialchars($this->username);
+		return $raw? $this->data['Username'] : html_specialchars($this->data['Username']);
 	}
 	
 	private function insert() {
-		$this->id = EmailListDataManager::insert(array(
-				$this->name,
-				$this->emailaddress,
-				$this->imaphost,
-				$this->username,
-				$this->password,
-				$this->host,
-				$this->port,
-				$this->administratoremail,
-				$this->processedDir,
-		));
+		$this->data['id'] = EmailListDataManager::insert($this->data);
 	}
 	
 	private function loadActiveSubscribers() {
-		if (!$this->activesubscribers) {
-			$this->activesubscribers = new ListSubscribers();
-			$this->activesubscribers->loadActiveByList($this);
+		if (!$this->cs['activesubscribers']) {
+			$this->cs['activesubscribers'] = new ListSubscribers();
+			$this->cs['activesubscribers']->loadActiveByList($this);
 		}
 	}
 	
@@ -206,9 +138,9 @@ class EmailList {
 	}
 	
 	private function loadSubscribers() {
-		if (!$this->subscribers) {
-			$this->subscribers = new ListSubscribers();
-			$this->subscribers->loadByList($this);
+		if (!$this->cs['subscribers']) {
+			$this->cs['subscribers'] = new ListSubscribers();
+			$this->cs['subscribers']->loadByList($this);
 		}
 	}
 	
@@ -216,19 +148,19 @@ class EmailList {
 	 * Save the object in the database.
 	 */
 	public function save() {
-		($this->id)? $this->update() : $this->insert();
+		($this->data['id'])? $this->update() : $this->insert();
 	}
 	
 	public function setAdministratorEmail($administratoremail) {
-		$this->administratoremail = $administratoremail;
+		$this->data['AdministratorEmail'] = $administratoremail;
 	}
 	
 	public function setEmailAddress($address) {
-		$this->emailaddress = $address;
+		$this->data['EmailAddress'] = $address;
 	}
 	
 	public function setHost($host) {
-		$this->host = $host;
+		$this->data['Host'] = $host;
 	}
 	
 	/**
@@ -237,7 +169,7 @@ class EmailList {
 	 * @param string $imaphost
 	 */
 	public function setIMAPHost($imaphost) {
-		$this->imaphost = $imaphost;
+		$this->data['IMAPHost'] = $imaphost;
 	}
 	
 	/**
@@ -245,19 +177,19 @@ class EmailList {
 	 * @param string $name
 	 */
 	public function setName($name) {
-		$this->name = $name;
+		$this->data['Name'] = $name;
 	}
 	
 	public function setUsername($username) {
-		$this->username = $username;
+		$this->data['Username'] = $username;
 	}
 	
 	public function setPassword($password) {
-		$this->password = $this->simple_encrypt($password);
+		$this->data['Password'] = Generate::encypt($password);
 	}
 	
 	public function setPort($port) {
-		$this->port = $port;
+		$this->data['Port'] = $port;
 	}
 	
 	/**
@@ -268,36 +200,14 @@ class EmailList {
 	 * @param string $processedDir
 	 */
 	public function setProcessedDir($processedDir) {
-		$this->processedDir = $processedDir;
+		$this->data['ProcessedDir'] = $processedDir;
 	}
 	
 	/**
 	 * Update in the database.
 	 */
 	private function update() {
-		EmailListDataManager::update(array(
-			$this->name,
-			$this->emailaddress,
-			$this->imaphost,
-			$this->username,
-			$this->password,
-			$this->host,
-			$this->port,
-			$this->administratoremail,
-			$this->processedDir,
-			$this->id
-		));
-	}
-	
-	// http://blog.justin.kelly.org.au/simple-mcrypt-encrypt-decrypt-functions-for-p/
-	private function simple_encrypt($text)
-	{
-		return trim(base64_encode(mcrypt_encrypt(MCRYPT_RIJNDAEL_256, Prefs::SALT_EMAIL_LISTS, $text, MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND))));
-	}
-	
-	private function simple_decrypt($text)
-	{
-		return trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_256, Prefs::SALT_EMAIL_LISTS, base64_decode($text), MCRYPT_MODE_ECB, mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB), MCRYPT_RAND)));
+	    EmailListDataManager::update($this->data, $this->data['id']);
 	}
 	
 	

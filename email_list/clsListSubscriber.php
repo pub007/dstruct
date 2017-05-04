@@ -2,19 +2,16 @@
 
 class ListSubscriber {
 	
-	/**
-	 * Is subscriber active?
-	 *
-	 * @var integer uts
-	 */
-	private $active = 0;
-	private $emailaddress = '';
-	private $id;
-	private $emaillist;
-	private $emaillistid;
-	private $name = '';
-	private $verifycode;
-	private $verifypause = 0;
+	private $data = array(
+	    'id'=>null,
+	    'Active' => 0,
+	    'EmailAddress' => '',
+	    'EmailList' => null,
+	    'EmailListID' => null,
+	    'Name' => '',
+	    'VerifyCode' => null,
+	    'VerifyPause' => 0,
+ 	);
 	
 	/**
 	 * Class constructor.
@@ -22,24 +19,20 @@ class ListSubscriber {
 	 */
 	public function __construct($row = false) {
 		if ($row != false) {
-			$this->id = $row['ListSubscriberID'];
-			$this->emaillistid = $row['EmailListID'];
-			$this->name = $row['Name'];
-			$this->emailaddress = $row['EmailAddress'];
-			$this->active = Convert::MySQLDateTimeToUTS($row['Active']);
-			$this->verifycode = $row['VerifyCode'];
-			$this->verifypause = Convert::MySQLDateTimeToUTS($row['VerifyPause']);
+		    $this->data = $row;
+		    $this->data['Active'] = Convert::MySQLDateTimeToUTS($this->data['Active']);
+		    $this->data['VerifyPause'] = Convert::MySQLDateTimeToUTS($this->data['VerifyPause']);
 		} else {
-			$this->verifycode = uniqid(); // set a default
+			$this->data['VerifyCode'] = uniqid(); // set a default
 		}
 	}
 	
 	public function getActive() {
-		return $this->active;
+		return $this->data['Active'];
 	}
 	
 	public function getEmailAddress($raw = FALSE) {
-		return $this->emailaddress;
+		return $this->data['EmailAddress'];
 	}
 	
 	public function getEmailList() {
@@ -48,31 +41,23 @@ class ListSubscriber {
 	}
 	
 	public function getID() {
-		return $this->id;
+		return $this->data['id'];
 	}
 	
 	public function getName($raw = false) {
-		return ($raw)? $this->name : html_specialchars($this->name);
+		return ($raw)? $this->data['Name'] : html_specialchars($this->data['Name']);
 	}
 	
 	public function getVerifyCode() {
-		return $this->verifycode;
+		return $this->data['VerifyCode'];
 	}
 	
 	public function getVerifyPause() {
-		return $this->verifypause;
+		return $this->data['VerifyPause'];
 	}
 	
 	private function insert() {
-		if (!$this->emaillistid) {throw new DStructGeneralException('ListSubscriber::insert() - Missing an email list for subscriber');}
-		$this->id = ListSubscriberDataManager::insert(array(
-				$this->emaillistid,
-				$this->name,
-				$this->emailaddress,
-				Convert::UTSToMySQLDateTime($this->active),
-				$this->verifycode,
-				Convert::UTSToMySQLDateTime($this->verifypause)
-		));
+		$this->data['id'] = ListSubscriberDataManager::insert($this->data);
 	}
 	
 	/**
@@ -144,7 +129,7 @@ class ListSubscriber {
 	
 	private function loadEmailList() {
 		if (!$this->emaillist) {
-			$this->emaillist = EmailList::loadByID($this->emaillistid);
+			$this->emaillist = EmailList::loadByID($this->data['EmailListID']);
 		}
 	}
 	
@@ -152,7 +137,7 @@ class ListSubscriber {
 	 * Save the object in the database.
 	 */
 	public function save() {
-		($this->id)? $this->update() : $this->insert();
+		($this->data['id'])? $this->update() : $this->insert();
 	}
 	
 	/**
@@ -165,38 +150,31 @@ class ListSubscriber {
 	 * @param integer $active UTS
 	 */
 	public function setActive($active) {
-		$this->active = $active;
+		$this->data['Active'] = $active;
 	}
 	
 	public function setEmailAddress($address) {
-		$this->emailaddress = $address;
+		$this->data['EmailAddress'] = $address;
 	}
 	
 	public function setEmailList($emaillist) {
 		if (is_object($emaillist)) {
-			$this->emaillistid = $emaillist->getID();
+			$this->data['EmailListID'] = $emaillist->getID();
 			$this->emaillist = $emaillist;
 		} else {
-			$this->emaillistid = $emaillist;
+			$this->data['EmailListID'] = $emaillist;
 		}
 	}
 	
 	public function setName($name) {
-		$this->name = $name;
+		$this->data['Name'] = $name;
 	}
 	
 	/**
 	 * Update in the database.
 	 */
 	private function update() {
-		ListSubscriberDataManager::update(array(
-		$this->name,
-		$this->emailaddress,
-		Convert::UTSToMySQLDateTime($this->active),
-		$this->verifycode,
-		Convert::UTSToMySQLDateTime($this->verifypause),
-		$this->id
-		));
+		ListSubscriberDataManager::update($this->data, $this->data['id']);
 	}
 	
 	public function verify() {

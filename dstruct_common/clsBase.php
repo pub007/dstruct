@@ -62,5 +62,34 @@ protected static function doStatement($statement, $values = array()) {
 	}
 	return $statement_handle;
 }
+
+protected static function generateInsert($data) {
+    $qs = array_fill('?', count($data));
+    return "INSERT INTO " . child::$tableName . " (" . implode(', ', array_keys($data)) . ") . VALUES (" . implode(', ', $qs) . ")";
+}
+
+protected static function generateUpdate($data, $idFields = false) {
+    $sql = "UPDATE " . self::$tablename . " SET ";
+    $sql .= implode(" = ?,\n", array_keys($data));
+    if (!$idFields) {
+        $sql .= " = ? WHERE " . self::$tableName . "ID = ?";
+    } else {
+        $sql .= " = ? WHERE ";
+        foreach ($idFields as $field => $d) {
+            $sql .= " AND $field = ?";
+        }
+        $sql = substr($sql, 5, strlen($sql)); // TODO: Check
+    }
+}
+
+protected static function generateSelect($data = false) {
+    if (!$data) {
+        return "SELECT * FROM " . static::getTableName();
+    }
+    return "SELECT " . implode(", ", array_keys($data)) . " FROM " . static::getTableName();
+}
+
+protected abstract static function getTableName();
+}
 }
 ?>
