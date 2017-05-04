@@ -60,7 +60,7 @@ const DEV = TRUE;
  * connectionname,dbtype,host,username,password,schema,port,defaultcharset
  * @var string
  */
-const DB_CONNECTIONS = 'defaultdb,mysql,localhost,root,password,dbname,3306,UTF-8';
+const DB_CONNECTIONS = 'defaultdb,mysql,localhost,root,password,dbname,3306,utf8';
 
 /*
 // production
