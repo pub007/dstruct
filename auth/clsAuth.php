@@ -70,10 +70,10 @@ public function __construct($areaname) {
 	
 	$this->areaname = $areaname;
 	@session_start();
-	if (checkset($_SESSION['authid']) == true &&
-		checkset($_SESSION['areaname']) == $this->areaname &&
-		checkset($_SESSION['authcontainer']) == true
-		) {
+	if (Validate::iss($_SESSION['authid']) == true &&
+		Validate::iss($_SESSION['areaname']) == $this->areaname &&
+		Validate::iss($_SESSION['authcontainer']) == true
+	) {
 		$this->activecontainer = $this->authcontainers[$_SESSION['authcontainer']]->loadByID($_SESSION['authid']);
 		
 		if (!$this->activecontainer) {
@@ -81,7 +81,6 @@ public function __construct($areaname) {
 			throw new DStructGeneralException('Perm::__construct() - Unable to load active container. The user may have been deleted.');
 		}
 		$this->permissions = $this->activecontainer->permissions();
-		//print_r($this->activecontainer);
 		$this->isauthenticated = true;
 	}
 }

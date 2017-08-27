@@ -138,7 +138,7 @@ public function getInversePage($url) {
  * @return boolean
  */
 public function isMobileAgent() {
-	$ua = checkset($_SERVER['HTTP_USER_AGENT']);
+	$ua = Validate::iss($_SERVER['HTTP_USER_AGENT']);
 	if (!$ua) {return false;} // HTTP_USER_AGENT doesn't ALWAYS exist so we assume it is not a mobile phone we are dealing with
 	$prefs = Prefs::getInstance();
 	$mobile_agents = $prefs->get('mobile_agents');

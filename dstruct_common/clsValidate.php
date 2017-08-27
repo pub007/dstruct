@@ -258,6 +258,29 @@ public static function isPostcode($pc) {
 }
 
 /**
+ * Check a string is set.
+ * @see Validate::isStringSet()
+ * @param string $var
+ * @param mixed $rtn Default return
+ * @return mixed
+ */
+public static function iss(string $var, $rtn = '') {
+    return self::isStringSet($var, $rtn);
+}
+
+/**
+ * Check a string is set (IsStringSet).
+ *
+ * Most useful for $_POST vars
+ * @param string $var
+ * @param mixed $rtn Default return
+ * @return mixed
+ */
+public static function isStringSet(string $var, $rtn = '') {
+    return (isset($var))? $var : $rtn;
+}
+
+/**
  *Is valid UK Bank SortCode.
  *@param string $sortcode SortCode to check
  *@return boolean

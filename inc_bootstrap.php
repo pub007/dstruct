@@ -103,13 +103,12 @@ function dstruct_shutdown_fn() {
  * 
  * Attempts to autoload classes and then caches the results. See the
  * 'autoloader_directories' property defined in the class constructor
- * for Prefs for more information.
+ * of Prefs for more information.
  * @param string $class_name
  */
 function dstruct_autoloader($class_name) {
 	$prefs = Prefs::getInstance();
 	$cache = $prefs->get('cache');
-	
 	$key = Prefs::APP_NAME . "_autoldr_$class_name";
 	
 	if ($cache->hasServer()) {
