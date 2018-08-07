@@ -273,6 +273,20 @@ public static function getInstance() {
 }
 
 /**
+ * Set a key / value pair, only if doesn't exist
+ * @param string $key
+ * @param mixed $val
+ * @return boolean False if already exists
+ */
+public function add($key, $val) {
+    if (isset($this->props[$key])) {
+        return false;
+    }
+    $this->set($key, $val);
+    return true;
+}
+
+/**
  * Set a key / value pair
  * @param string $key
  * @param mixed $val
