@@ -18,7 +18,7 @@ class ObjWatcher {
  * The watched objects
  * @var array
  */
-private $objs = array();
+private static $objs = array();
 
 /**
  * Times watched objects were found.
@@ -37,16 +37,6 @@ private static $instance;
  */
 private function __construct() {}
 
-/**
- * Get an instance of this Singleton object.
- * @return object
- */
-public static function instance() {
-	if (!self::$instance) {
-		self::$instance = new ObjWatcher();
-	}
-	return self::$instance;
-}
 
 /**
  * Objects watched.
@@ -72,7 +62,7 @@ public static function getCacheHits() {
  * @param object $obj
  * @return string
  */
-private function globalKey($obj) {
+private static function globalKey($obj) {
 	$key = get_class($obj) . '.' . $obj->getID();
 	return $key;
 }
@@ -82,9 +72,8 @@ private function globalKey($obj) {
  * @param object $obj
  */
 public static function add($obj) {
-	$inst = self::instance();
-	$globalkey = $inst->globalKey($obj);
-	$inst->objs[$globalkey] = $obj;
+    $globalkey = self::globalKey($obj);
+    self::$objs[$globalkey] = $obj;
 }
 
 /**
@@ -97,11 +86,10 @@ public static function add($obj) {
  * @return mixed The object, if it is found, or false.
  */
 public static function exists($classname, $id) {
-	$inst = self::instance();
-	$key = $classname . '.' . $id;
-	if (array_key_exists($key, $inst->objs)) {
-		self::$cachehits++;
-		return $inst->objs[$key];
+    $key = $classname . '.' . $id;
+    if (array_key_exists($key, self::$objs)) {
+        self::$cachehits++;
+        return self::$objs[$key];
 	}
 	return false;
 }
@@ -112,10 +100,9 @@ public static function exists($classname, $id) {
  * @return boolean True on success, false if object not found.
  */
 public static function remove($obj) {
-	$inst = self::instance();
-	$key = $inst->globalKey($obj);
-	if (array_key_exists($key, $inst->objs)) {
-		unset($inst->objs[$key]);
+    $key = self::globalKey($obj);
+    if (array_key_exists($key, self::$objs)) {
+        unset(self::$objs[$key]);
 		return true;
 	} else {
 		return false;

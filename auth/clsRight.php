@@ -53,7 +53,7 @@ public function __construct($row = false) {
  * Add an Implied Right inherited when user has this right.
  * @param Right $right
  */
-public function addImpliedRight(Right $right) {
+public function addImpliedRight($right) {
 	$this->loadImpliedRights();
 	AuthDataManager::insertImpliedRight($this->id, $right->getID());
 	$this->impliedrights->add($right);
@@ -142,7 +142,7 @@ public function permissions() {
  * Remove an Implied Right granted by ownership of this right.
  * @param Right $right
  */
-public function removeImpliedRight(Right $right) {
+public function removeImpliedRight($right) {
 	$this->loadImpliedRights();
 	AuthDataManager::deleteImpliedRight($this->id, $right->getID());
 	$this->impliedrights->remove($right);

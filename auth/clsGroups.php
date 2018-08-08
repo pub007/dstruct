@@ -13,7 +13,7 @@ class Groups extends ObjCollection {
  * @param Group $obj
  * @see ObjCollection::add()
  */
-public function add(Group $obj) {
+public function add($obj) {
 	parent::add($obj);
 }
 
@@ -68,7 +68,7 @@ public function loadByAuthContainer($container) {
  * @param Group $obj
  * @see ObjCollection::remove()
  */
-public function remove(Group $obj) {
+public function remove($obj) {
 	parent::remove($obj);
 }
 

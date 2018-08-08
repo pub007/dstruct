@@ -49,36 +49,36 @@ class ListSubscriberDataManager extends Base {
 		return $selector->getConnection()->lastInsertID();
 	}
 	
-	public function delete($id) {
+	public static function delete($id) {
 		$rs = self::doStatement(self::$delete, array($id));
 	}
 	
-	public function load($id) {
+	public static function load($id) {
 		$rs = self::doStatement(self::$sf . self::$load, array($id));
 		return new DBIterator($rs);
 	}
 	
-	public function loadActiveByList($id) {
+	public static function loadActiveByList($id) {
 		$rs = self::doStatement(self::$sf . self::$load_active_by_list, array($id));
 		return new DBIterator($rs);
 	}
 	
-	public function loadByEmail($emailaddress, $listid) {
+	public static function loadByEmail($emailaddress, $listid) {
 		$rs = self::doStatement(self::$sf . self::$load_by_email, array($emailaddress, $listid));
 		return new DBIterator($rs);
 	}
 	
-	public function loadByList($id) {
+	public static function loadByList($id) {
 		$rs = self::doStatement(self::$sf . self::$load_by_list, array($id));
 		return new DBIterator($rs);
 	}
 	
-	public function loadByVerifyCode($code) {
+	public static function loadByVerifyCode($code) {
 		$rs = self::doStatement(self::$sf . self::$load_by_verify_code, array($code));
 		return new DBIterator($rs);
 	}
 	
-	public function update($data) {
+	public static function update($data) {
 		self::doStatement(self::$update, $data);
 	}
 	
