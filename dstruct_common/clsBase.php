@@ -90,6 +90,6 @@ protected static function generateSelect($data = false) {
 }
 
 protected abstract static function getTableName();
-}
+
 }
 ?>
