@@ -209,6 +209,10 @@ public function get($key) {
 	}
 }
 
+public static function getTableName() {
+    return 'AppCache';
+}
+
 /**
  * Cache hits.
  * @return integer
