@@ -7,7 +7,7 @@
  */
 define('APP_ROOT', realpath(dirname(__FILE__) . '/../..//') . '/');
 
-require_once APP_ROOT.'lib/DStruct/prefs/clsPrefs.php';
+require_once APP_ROOT.'lib/prefs/clsPrefs.php';
 $dstruct_prefs = Prefs::getInstance();
 
 // define DSTRUCT_TIMER as true to initiate timing. Misses the initial setup so will not be completely accurate
