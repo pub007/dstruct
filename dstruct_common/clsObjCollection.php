@@ -64,11 +64,15 @@ public function count() {return sizeof($this->objs);}
  */
 public function add($obj) {
 	if (!is_object($obj)) {throw new DStructGeneralException('ObjCollection::add() - Expecting object');}
+	$id = $obj->getID();
+	if (!is_integer($id) && !is_string($id)) {
+	    throw new DStructGeneralException("ObjCollection::add() - getID() must return string or integer. Returned type: " . gettype($id));
+	}
 	if ($this->exists($obj)) {
 		throw new DStructGeneralException('ObjCollection::add() - Attempting to add an object which already exists. ID:'.$obj->getID());
 		return false;
 	} else {
-		$this->objs[$obj->getID()] = $obj;
+		$this->objs[$id] = $obj;
 		return true;
 	}
 }
@@ -103,8 +107,12 @@ protected function clear() {$this->objs = array();}
  *@return boolean
  */
 public function exists($obj) {
-	$objid = (is_object($obj))? $obj->getID() : $obj;
-	return (array_key_exists($objid, $this->objs))? true : false;
+    if (!is_object($obj)) {throw new DStructGeneralException("ObjCollection::exists() - expecting Object. Found " . gettype($obj));}
+    $id = (is_object($obj))? $obj->getID() : $obj;
+	if (!is_string($id) && !is_integer($id)) {
+	    throw new DStructGeneralException("ObjCollection::add() - getID() must return string or integer. Returned type: " . gettype($id));
+	}
+	return (array_key_exists($id, $this->objs))? true : false;
 }
 
 /**
