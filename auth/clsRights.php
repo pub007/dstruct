@@ -12,7 +12,7 @@ class Rights extends ObjCollection {
  *Add a {@link Right} to the collection.
  *@param Right $right
  */
-public function add(Right $right) {
+public function add($right) {
 	parent::add($right);
 }
 
@@ -55,7 +55,7 @@ public function loadByRight(Right $right) {
  *Remove an object from the collection.
  *@param Right $right {@link Right} object
  */
-public function remove(Right $right) {
+public function remove($right) {
 	parent::remove($right);
 }
 }

@@ -5,7 +5,7 @@ class EmailListDataManager extends Base {
 	private static $load_by_id = ' WHERE EmailListID = ?';
 	
 	protected static function getTableName() {
-	    return "EmailList";
+	    return "emaillist";
 	}
 	
 	public static function insert($data) {

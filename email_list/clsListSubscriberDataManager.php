@@ -53,6 +53,10 @@ class ListSubscriberDataManager extends Base {
 		$rs = self::doStatement(self::$delete, array($id));
 	}
 	
+	public static function getTableName() {
+	    return 'listsubscriber';
+	}
+	
 	public static function load($id) {
 		$rs = self::doStatement(self::$sf . self::$load, array($id));
 		return new DBIterator($rs);

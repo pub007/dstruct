@@ -32,6 +32,7 @@ class EmailList {
 	public function __construct($row = false) {
 		if ($row != false) {
 			$this->data = $row;
+			$this->data['id'] = $row['EmailListID'];
 		}
 	}
 	
@@ -75,16 +76,16 @@ class EmailList {
 	}
 	
 	public function getIMAPHost($raw = false) {
-		return $raw? $this->data['IMAPHost'] : html_specialchars($this->data['IMAPHost']);
+		return $raw? $this->data['IMAPHost'] : Format::hsc($this->data['IMAPHost']);
 	}
 	
 	public function getName($raw = false) {
-		return $raw? $this->data['Name'] : html_specialchars($this->data['Name']);
+		return $raw? $this->data['Name'] : Format::hsc($this->data['Name']);
 	}
 	
 	public function getPassword($raw = false) {
 		$password = Generate::decrypt($this->data['Password']);
-		return $raw? $password : html_specialchars($password);
+		return $raw? $password : Format::hsc($password);
 	}
 	
 	public function getPort() {
@@ -92,7 +93,7 @@ class EmailList {
 	}
 	
 	public function getProcessedDir($raw = false) {
-		return $raw? $this->data['ProcessedDir'] : html_specialchars($this->data['ProcessedDir']);
+		return $raw? $this->data['ProcessedDir'] : Format::hsc($this->data['ProcessedDir']);
 	}
 	
 	public function getSubscribers() {
@@ -101,7 +102,7 @@ class EmailList {
 	}
 	
 	public function getUsername ($raw = false) {
-		return $raw? $this->data['Username'] : html_specialchars($this->data['Username']);
+		return $raw? $this->data['Username'] : Format::hsc($this->data['Username']);
 	}
 	
 	private function insert() {

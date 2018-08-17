@@ -13,6 +13,8 @@ class ListSubscriber {
 	    'VerifyPause' => 0,
  	);
 	
+	private $emaillist = null;
+	
 	/**
 	 * Class constructor.
 	 * @param array $row Information to populate object.
@@ -20,6 +22,7 @@ class ListSubscriber {
 	public function __construct($row = false) {
 		if ($row != false) {
 		    $this->data = $row;
+		    $this->data['id'] = $row['ListSubscriberID'];
 		    $this->data['Active'] = Convert::MySQLDateTimeToUTS($this->data['Active']);
 		    $this->data['VerifyPause'] = Convert::MySQLDateTimeToUTS($this->data['VerifyPause']);
 		} else {
@@ -45,7 +48,7 @@ class ListSubscriber {
 	}
 	
 	public function getName($raw = false) {
-		return ($raw)? $this->data['Name'] : html_specialchars($this->data['Name']);
+		return ($raw)? $this->data['Name'] : Format::hsc($this->data['Name']);
 	}
 	
 	public function getVerifyCode() {
@@ -65,8 +68,8 @@ class ListSubscriber {
 	 * @return boolean
 	 */
 	public function isActive() {
-		if ($this->active == 0) {return false;} // may have subbed, but not verified
-		return ($this->active < time()); // could be paused until a certain time
+		if ($this->data['Active'] == 0) {return false;} // may have subbed, but not verified
+		return ($this->data['Active'] < time()); // could be paused until a certain time
 	}
 	
 	/////////  WARNING - NEEDS CHANGING AS NEED TO PICK WITH LIST and ADDRESS AS MAY BE MEMBER OF MORE THAN ONE LIST!!!! ///////////////////////////////
