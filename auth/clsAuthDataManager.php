@@ -269,6 +269,10 @@ public static function deleteImpliedRight($rightid, $impliedid) {
 	self::doStatement(self::$delete_implied_right, array($rightid, $impliedid));
 }
 
+public static function getTableName() {
+    return 'fosteringcontactuser';
+}
+
 /**
  * Insert an AuthContainer.
  * @param string $id

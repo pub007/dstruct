@@ -322,7 +322,7 @@ class Generate {
             $s = $s->__toString();
         }
         $dir = Prefs::gi()->get('logging_path');
-        $date = DB::dateStr(time());
+        $date = date('Y-m-d H:i:s');
         if ($flags & self::LOG_ERROR_LOG) {
             error_log($s);
         }
@@ -335,14 +335,14 @@ class Generate {
             if ($target) {
                 $scriptName = basename($target, '.php');
             }
-            if (!isset($tested['$target'])) {
+            if (!isset($tested[$target])) {
                 if (!file_exists($dir)) {
                     $s =  "\n$date | $scriptName | Unable to find directory to write to. Message: $s";
                     echo $s;
                     error_log($s);
                     return false;
                 }
-                $tested = true;
+                $tested[$target] = true;
             }
             $rtn = file_put_contents("$dir/$scriptName.log", $s, FILE_APPEND);
             if ($rtn === false) {

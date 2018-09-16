@@ -11,8 +11,7 @@
  */
 class EmailList {
 	
-    private $data = array(
-        'id'=>null,
+    private $data = [
         'Name'=>null,
         'EmailAddress'=>null,
         'IMAPHost'=>null,
@@ -22,8 +21,11 @@ class EmailList {
         'Port'=>null,
         'AdministratorEmail'=>null,
         'ProcessedDir'=>null,
-    );
+    ];
+    
     private $cs = null; // list subscribers object
+    
+    private $id = null;
     
 	/**
 	 * Class constructor.
@@ -31,12 +33,14 @@ class EmailList {
 	 */
 	public function __construct($row = false) {
 		if ($row != false) {
+			$this->id = $row['EmailListID'];
+			unset($row['EmailListID']);
 			$this->data = $row;
-			$this->data['id'] = $row['EmailListID'];
 		}
 	}
 	
     public function __toString() {
+    	$this->data['id'] = $this->id;
 	    return print_r($this->data, true);
 	}
 	
@@ -72,7 +76,7 @@ class EmailList {
 	}
 	
 	public function getID() {
-		return (isset($this->data['id']))? $this->data['id'] : false;
+		return (isset($this->id))? $this->id : false;
 	}
 	
 	public function getIMAPHost($raw = false) {
@@ -84,7 +88,8 @@ class EmailList {
 	}
 	
 	public function getPassword($raw = false) {
-		$password = Generate::decrypt($this->data['Password']);
+		//$password = Generate::decrypt($this->data['Password']); // temp disabled due to mcrypt
+		$password = $this->data['Password'];
 		return $raw? $password : Format::hsc($password);
 	}
 	
@@ -106,7 +111,7 @@ class EmailList {
 	}
 	
 	private function insert() {
-		$this->data['id'] = EmailListDataManager::insert($this->data);
+		$this->id = EmailListDataManager::insert($this->data);
 	}
 	
 	private function loadActiveSubscribers() {
@@ -149,7 +154,7 @@ class EmailList {
 	 * Save the object in the database.
 	 */
 	public function save() {
-		($this->data['id'])? $this->update() : $this->insert();
+		($this->id)? $this->update() : $this->insert();
 	}
 	
 	public function setAdministratorEmail($administratoremail) {
@@ -186,7 +191,8 @@ class EmailList {
 	}
 	
 	public function setPassword($password) {
-		$this->data['Password'] = Generate::encypt($password);
+		//$this->data['Password'] = Generate::encypt($password); temp disabled due to mcrypt
+		$this->data['Password'] = $password;
 	}
 	
 	public function setPort($port) {
@@ -208,7 +214,7 @@ class EmailList {
 	 * Update in the database.
 	 */
 	private function update() {
-	    EmailListDataManager::update($this->data, $this->data['id']);
+	    EmailListDataManager::update($this->data, $this->id);
 	}
 	
 	
