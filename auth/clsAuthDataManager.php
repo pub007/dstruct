@@ -270,7 +270,7 @@ public static function deleteImpliedRight($rightid, $impliedid) {
 }
 
 public static function getTableName() {
-    return 'fosteringcontactuser';
+    return 'fosteringcontactuser'; // TODO: WTF?
 }
 
 /**

@@ -104,6 +104,15 @@ protected static function generateSelect($data = false) {
 
 protected abstract static function getTableName();
 
+/**
+ * Delete from database
+ * 
+ * @param mixed $data id or array of IDs
+ */
+public static function delete($data) {
+	static::doStatement(static::generateDelete($data));
+}
+
 public static function insert($data) {
 	static::doStatement(static::generateInsert($data));
 	$selector = DBSelector::getInstance();
