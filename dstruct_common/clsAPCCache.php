@@ -8,7 +8,7 @@
  * @package dstruct_common
  *
  */
-class APCCache implements DStructCacheInterface {
+class APCuCache implements DStructCacheInterface {
 
 /**
  * null or instance of the class.
@@ -56,7 +56,7 @@ private $hasserver = false;
  * available or not: {@link APCCache::hasServer()}
  */
 protected function __construct() {
-	$this->hasserver = (extension_loaded('apc'))? true : false;
+	$this->hasserver = (function_exists('apcu_enabled') && apcu_enabled())? true : false;
 }
 
 /**
@@ -68,7 +68,7 @@ protected function __construct() {
  * @return boolean TRUE if value was actually added, FALSE if otherwise
  */
 public function add($key, $var, $expire = 604800) {
-	$result = apc_add($key, $var, $expire);
+	$result = apcu_add($key, $var, $expire);
 	if ($result) {
 		$this->writes++;
 	} else {
@@ -84,7 +84,7 @@ public function add($key, $var, $expire = 604800) {
  * @return boolean
  */
 public function delete($key) {
-	return apc_delete($key);
+	return apcu_delete($key);
 }
 
 /**
@@ -105,7 +105,7 @@ public static function getInstance() {
  * @return mixed
  */
 public function get($key) {
-	$result = apc_fetch($key);
+	$result = apcu_fetch($key);
 	if ($result) {
 		$this->hits++;
 	} else {
@@ -150,7 +150,7 @@ public function hasServer() {return $this->hasserver;}
  * @see DStructCacheInterface::set()
  */
 public function set($key, $var, $expire = 604800) { // expire = 1 week
-	$result = apc_store($key, $var, $expire);
+	$result = apcu_store($key, $var, $expire);
 	if ($result) {
 		$this->writes++;
 	} else {
