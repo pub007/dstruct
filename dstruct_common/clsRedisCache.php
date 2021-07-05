@@ -11,10 +11,10 @@
 class RedisCache implements DStructCacheInterface {
 
 /**
- * null or instance of the class.
- * @var mixed
+ * Array containing instance of the class.
+ * @var array
  */
-private static $instance;
+private static $instances = [];
 
 /**
  * Cache hits.
@@ -50,27 +50,39 @@ private $failedwrites = 0;
  */
 private $hasserver = false;
 
+/**
+ * Instance of the cache
+ * @var null|object
+ */
 private $r = null;
 
 /**
  * Class constructor
  * Object is singleton. Creating instance of class checks whether Redis is
  * available or not: {@link RedisCache::hasServer()}
+ * @return false|RedisCache
  */
-protected function __construct() {
+protected function __construct(string $cacheName = 0) {
 	$this->hasserver = true;
 	if (!extension_loaded('redis')) {
 	    $this->hasserver = false;
 	    error_log("RedisCache::__construct(): Redis extension is not loaded");
+	    return false;
 	}
-	if (!defined('Prefs::REDIS_CACHE_SERVERS')) {
-	    $this->hasserver = false;
-	    error_log("RedisCache::__construct(): Prefs::REDIS_CACHE_SERVERS not defined");
+	// if no connection name given then use first element
+	if (!$conn) {
+		$conn = 0; 
+	}
+	if (!$config = Prefs::gi('redis_config')) {
+		if (!$config = $config[$conn]) {
+			$this->hasserver = false;
+			error_log("RedisCache::__construct(): Prefs key 'redis_cache' not defined");
+			return false;
+		}
 	}
 	// currently only supporting one server
 	$r = new Redis();
-	$con = Prefs::REDIS_CACHE_SERVERS;
-	$r->connect($con['address'], $con['port']);
+	$r->connect($config['host'], $config['port']);
 	if ($r->ping() !== '+PONG') {
 	    $this->hasserver = false;
 	    error_log("RedisCache::__construct(): Unable to connect to server");
@@ -108,14 +120,21 @@ public function delete($key) {
 }
 
 /**
- * Get an instance of this Singleton class.
+ * Get an instance of this class.
  * @see DStructCacheInterface::getInstance()
+ * @param string Name of the cache to return instance of. Empty string for default / first in config
  * @return object
  * @todo rewrite to handle pools
  */
-public static function getInstance() {
-	if (empty(self::$instance)) {self::$instance = new RedisCache();}
-	return self::$instance;
+public static function getInstance(string $cacheName = '') {
+	if (in_array(self::$instances, $cacheName)) {
+		self::$instances[$cacheName] = new RedisCache($cacheName);
+	}
+	return self::$instances[$cacheName];
+}
+
+public static function gi(string $cacheName = '') {
+	return self::getInstance($cacheName);
 }
 
 /**
