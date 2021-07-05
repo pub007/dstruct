@@ -7,8 +7,8 @@
  */
 define('APP_ROOT', realpath(dirname(__FILE__) . '/../..//') . '/');
 
-require_once APP_ROOT.'lib/prefs/clsPrefs.php';
-$dstruct_prefs = Prefs::getInstance();
+require_once APP_ROOT.'lib/clsPrefs.php';
+$dstruct_prefs = Prefs::gi();
 
 // define DSTRUCT_TIMER as true to initiate timing. Misses the initial setup so will not be completely accurate
 if (defined('Prefs::DSTRUCT_TIMER') && Prefs::DSTRUCT_TIMER) {
@@ -60,13 +60,12 @@ unset($dstruct_prefs);
  * 
  * PHP calls the shutdown function at the end of processing the script. Any un-caught
  * errors will be seen in this function and are emailed if required.
- * @see Prefs::DEV
  */
 function dstruct_shutdown_fn() {
 	if(is_null($e = error_get_last()) === false) {
-		require_once APP_ROOT.'lib/DStruct/prefs/clsPrefs.php';
+		require_once APP_ROOT.'lib/clsPrefs.php';
 		
-		$prefs = Prefs::getInstance();
+		$prefs = Prefs::gi();
 		$ignorederrors = $prefs->get('ignored_errors');
 		
 		// if any errors are set to be ignored in prefs, just exit;
@@ -107,7 +106,7 @@ function dstruct_shutdown_fn() {
  * @param string $class_name
  */
 function dstruct_autoloader($class_name) {
-	$prefs = Prefs::getInstance();
+	$prefs = Prefs::gi();
 	$cache = $prefs->get('cache');
 	$key = Prefs::APP_NAME . "_autoldr_$class_name";
 	

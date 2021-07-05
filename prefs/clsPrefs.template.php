@@ -62,12 +62,6 @@ const DEV = TRUE;
  */
 const DB_CONNECTIONS = 'defaultdb,mysql,localhost,root,password,dbname,3306,utf8';
 
-/*
-// production
-DEV = FALSE;
-const DB_CONNECTIONS = '';
-*/
-
 /**
  * DB Connection for {@link DatabaseCache}
  * If you are using a DatabaseCache then you will need to define the
@@ -79,14 +73,14 @@ const DB_CACHE = 'appcache';
 /**
  * Default Cache
  * Set the default cache system to be used by the framework. Can be:
- * <var>APC</var>,
+ * <var>Redis</var>,
  * <var>DStructMemCache</var>,
  * <var>Database</var>,
  * another cache object which impliments {@link DStructCacheInterface} or leave blank for none. Not using APC (or using none) will not turn off
  * the APC op-code cache.
  * @var string
  */
-const CACHE_DEFAULT = 'APC';
+const CACHE_DEFAULT = 'Redis';
 
 /**
  * Enable script timing
@@ -215,6 +209,15 @@ const FORMAT_FORM_DATE = 'd/m/Y';
  * any global compile time values stored in arrays etc here.
  */
 private function __construct() {
+	switch(gethostname()) {
+		case 'YOUR-HOSTNAME-HERE':
+			define('ENV', 'LIVE');
+			break;
+		default:
+			define('ENV', 'DEV');
+			break;
+	}
+	
 	// arrays not allowed as class constants, so...
 	// put them as declared
 	
@@ -270,6 +273,14 @@ public static function getInstance() {
 		self::$instance = new Prefs;
 	}
 	return self::$instance;
+}
+
+/**
+ * 
+ * @return object Prefs
+ */
+public static function gi() {
+	return self::getInstance();
 }
 
 /**
