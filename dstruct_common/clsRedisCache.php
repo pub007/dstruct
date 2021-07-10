@@ -62,23 +62,32 @@ private $r = null;
  * available or not: {@link RedisCache::hasServer()}
  * @return false|RedisCache
  */
-protected function __construct(string $cacheName = 0) {
+protected function __construct(string $cacheName) {
 	$this->hasserver = true;
 	if (!extension_loaded('redis')) {
 	    $this->hasserver = false;
 	    error_log("RedisCache::__construct(): Redis extension is not loaded");
 	    return false;
 	}
-	// if no connection name given then use first element
-	if (!$conn) {
-		$conn = 0; 
+	// get config
+	$config = Prefs::gi()->get('redis_config');
+	if (!$config) {
+		$this->hasserver = false;
+		error_log("RedisCache::__construct(): Prefs key 'redis_config' not defined");
+		return false;
 	}
-	if (!$config = Prefs::gi('redis_config')) {
-		if (!$config = $config[$conn]) {
-			$this->hasserver = false;
-			error_log("RedisCache::__construct(): Prefs key 'redis_cache' not defined");
-			return false;
+	// if no connection name given then use first element
+	if (!$cacheName) {
+		// $cacheName = array_key_first($config); // after php7.4
+		foreach ($config as $cacheName => $var) {
+			break;
 		}
+	}
+	
+	if (!$config = $config[$cacheName]) {
+		$this->hasserver = false;
+		error_log("RedisCache::__construct(): Redis config named [$cacheName] not defined");
+		return false;
 	}
 	// currently only supporting one server
 	$r = new Redis();
@@ -127,7 +136,7 @@ public function delete($key) {
  * @todo rewrite to handle pools
  */
 public static function getInstance(string $cacheName = '') {
-	if (in_array(self::$instances, $cacheName)) {
+	if (!in_array($cacheName, self::$instances)) {
 		self::$instances[$cacheName] = new RedisCache($cacheName);
 	}
 	return self::$instances[$cacheName];
@@ -177,7 +186,9 @@ public function writes() {return $this->writes;}
  * Cache is available.
  * @return boolean
  */
-public function hasServer() {return $this->hasserver;}
+public function hasServer() {
+	return $this->hasserver;
+}
 
 /**
  * Add to the cache, overwriting if the key already exists.
