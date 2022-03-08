@@ -1,0 +1,10 @@
+{
+	"name" : "pub007/dstruct",
+	"repositories" : [{
+			"type" : "vcs",
+			"url" : "https://github.com/pub007/dstruct"
+		}
+	],
+	"license" : "Apache-2.0",
+	"homepage" : "https://dstruct.org/"
+}
