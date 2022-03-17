@@ -6,5 +6,10 @@
 		}
 	],
 	"license" : "Apache-2.0",
-	"homepage" : "https://dstruct.org/"
+	"homepage" : "https://dstruct.org/",
+	"autoload" : {
+		"psr-4" : {
+			"pub007\\dstruct\\" : "src/"
+		}
+	}
 }
