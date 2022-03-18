@@ -1,4 +1,5 @@
 <?php
+namespace pub007\dstruct\presentation;
 /**
  * HMenu class.
  */

@@ -1,4 +1,5 @@
 <?php
+namespace pub007\dstruct;
 // usually, the AutoLoader will load classes, but in this case, the database cache
 // can be loaded before the autoloader because the cache is required for the
 // autoloader to work!
