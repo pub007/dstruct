@@ -30,7 +30,8 @@ private function __construct() {
  *@param string Format of 'yyyy-mm-dd'
  *@return integer
  */
-public static function MySQLDateToUTS($date) {
+public static function MySQLDateToUTS(string $date): int
+{
 	if ($date == '1900-01-01' || $date == '1970-01-01') {return 0;}
 	$result = strtotime($date);
 	if ($result) {
