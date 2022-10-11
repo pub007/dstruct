@@ -48,7 +48,7 @@ public function getConnection($key = false) {
 	if (!$key) {$key = $this->getCurrent();} // use default if no connection specified
 	if (!array_key_exists($key, $this->props)) {return false;}
 	if (!$this->isConnected($key)) {
-		$reflect = new ReflectionClass('DB');
+		$reflect = new \ReflectionClass('DB');
 		$db = $reflect->newInstanceArgs($this->props[$key]); // create a new db with the arguments originally passed
 		$this->props[$key] = $db; // replace the array with the instantiated object
 	}
