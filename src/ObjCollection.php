@@ -28,14 +28,14 @@ namespace pub007\dstruct;
  */
 abstract class ObjCollection implements \Iterator, \Countable
 {
-
+	
 	/**
 	 * Sort ascending.
 	 *
 	 * @var integer
 	 */
 	const SORT_OBJECTS_ASC = 1;
-
+	
 	/**
 	 *
 	 * Sort descending.
@@ -43,18 +43,18 @@ abstract class ObjCollection implements \Iterator, \Countable
 	 * @var integer
 	 */
 	const SORT_OBJECTS_DESC = - 1;
-
+	
 	/**
 	 * Stores objects.
 	 *
 	 * @var array
 	 */
 	public $objs = [];
-
-	protected $strictClassName = '';
-
+	
+	protected $strictClassName = null;
+	
 	protected $strictMode = false;
-
+	
 	/**
 	 * Array of objects.
 	 *
@@ -64,7 +64,7 @@ abstract class ObjCollection implements \Iterator, \Countable
 	{
 		return $this->objs;
 	}
-
+	
 	/**
 	 * Number of objects currently in collection
 	 *
@@ -74,7 +74,7 @@ abstract class ObjCollection implements \Iterator, \Countable
 	{
 		return count($this->objs);
 	}
-
+	
 	/**
 	 * Add an object to the collection.
 	 *
@@ -97,7 +97,7 @@ abstract class ObjCollection implements \Iterator, \Countable
 		$this->objs[$key] = $obj;
 		return true;
 	}
-
+	
 	/**
 	 * Remove an object from the collection.
 	 *
@@ -117,10 +117,11 @@ abstract class ObjCollection implements \Iterator, \Countable
 				$key = $className . "_" . $member;
 			}
 			unset($this->objs[$key]);
+			return true;
 		}
 		return false;
 	}
-
+	
 	/**
 	 * Clear the collection.
 	 */
@@ -128,7 +129,7 @@ abstract class ObjCollection implements \Iterator, \Countable
 	{
 		$this->objs = [];
 	}
-
+	
 	/**
 	 * Test whether an object exists in the collection.
 	 *
@@ -153,11 +154,11 @@ abstract class ObjCollection implements \Iterator, \Countable
 		}
 		return (array_key_exists($key, $this->objs)) ? true : false;
 	}
-
+	
 	/**
 	 * Returns an object from the collection based on its ID.
 	 *
-	 * @param integer $id
+	 * @param integer|string $id
 	 * @return object|false
 	 */
 	public function getByID($id)
@@ -167,7 +168,7 @@ abstract class ObjCollection implements \Iterator, \Countable
 		}
 		return false;
 	}
-
+	
 	/**
 	 * Returns the first object in the collection.
 	 *
@@ -182,16 +183,16 @@ abstract class ObjCollection implements \Iterator, \Countable
 			return $obj;
 		}
 	}
-
+	
 	protected function generateKey(object $obj): string
 	{
 		$id = $obj->getID();
 		$className = get_class($obj);
-
+		
 		if (! is_integer($id) && ! is_string($id)) {
 			throw new DStructGeneralException("ObjCollection::generateKey() - getID() must return string or integer. Returned type: " . gettype($id));
 		}
-
+		
 		if ($this->strictMode) {
 			if (! $this->strictClassName) { // set the strict class to the first class we see
 				$this->strictClassName = get_class($obj);
@@ -201,12 +202,17 @@ abstract class ObjCollection implements \Iterator, \Countable
 				}
 			}
 		}
-
+		
 		return $className . "_" . $id;
 	}
-
+	
+	public function isStrictMode(): bool
+	{
+		return $this->strictMode;
+	}
+	
 	// ================== SORT - Sort Objects by attribute or method ===========
-
+	
 	/**
 	 * Callback used by usort in {@link sortObjects()} to sort by the return from an objects method.
 	 *
@@ -218,7 +224,7 @@ abstract class ObjCollection implements \Iterator, \Countable
 	{
 		global $csort_cmp;
 		$paramstring = '';
-
+		
 		if ($csort_cmp['params']) {
 			foreach ($csort_cmp['params'] as $param) {
 				$paramstring .= $param . ', ';
@@ -226,15 +232,15 @@ abstract class ObjCollection implements \Iterator, \Countable
 			// remove last ', '
 			$paramstring = substr($paramstring, 0, strlen($paramstring) - 2);
 		}
-
+		
 		$keya = $a->$csort_cmp['key']($paramstring);
 		$keyb = $b->$csort_cmp['key']($paramstring);
-
+		
 		if ($csort_cmp['astime']) {
 			$keya = strtotime($keya);
 			$keyb = strtotime($keyb);
 		}
-
+		
 		if ($csort_cmp['caseinsensitive'] && $csort_cmp['astime'] == false) {
 			switch ($result = strcasecmp($keya, $keyb)) {
 				case $result == 0:
@@ -257,7 +263,7 @@ abstract class ObjCollection implements \Iterator, \Countable
 			return 0;
 		}
 	}
-
+	
 	/**
 	 * Callback used by usort in {@link sortObjects()} to sort by objects attributes
 	 *
@@ -268,15 +274,15 @@ abstract class ObjCollection implements \Iterator, \Countable
 	private static function csort_cmp_attribute(&$a, &$b)
 	{
 		global $csort_cmp;
-
+		
 		$keya = $a->$csort_cmp['key'];
 		$keyb = $b->$csort_cmp['key'];
-
+		
 		if ($csort_cmp['astime']) {
 			$keya = strtotime($keya);
 			$keyb = strtotime($keyb);
 		}
-
+		
 		if ($csort_cmp['caseinsensitive'] && $csort_comp['astime'] == false) {
 			switch ($result = strcasecmp($keya, $keyb)) {
 				case $result == 0:
@@ -299,7 +305,31 @@ abstract class ObjCollection implements \Iterator, \Countable
 			return 0;
 		}
 	}
-
+	
+	public function getStrictClassName(): ?string
+	{
+		return $this->strictClassName;
+	}
+	
+	/**
+	 * Pop the object off the end of the collection
+	 *
+	 * @param Object $obj
+	 */
+	public function pop(): object
+	{
+		return array_pop($this->objs);
+	}
+	
+	/**
+	 *
+	 * @see ObjCollection::add()
+	 */
+	public function push(object $obj): bool
+	{
+		return $this->add($obj);
+	}
+	
 	public function setStrictClassName(string $name)
 	{
 		if ($this->strictClassName && $this->strictClassName != $name) {
@@ -315,12 +345,48 @@ abstract class ObjCollection implements \Iterator, \Countable
 		$this->strictMode = true;
 		$this->strictClassName = $name;
 	}
-
-	public function setStrictMode(bool $mode): void
+	
+	public function setStrictMode(): void
 	{
+		if ($this->strictMode) {
+			return;
+		}
+		if (count($this->objs) && ! $this->strictClassName) {
+			foreach ($this->objs as $obj) {
+				if (! $this->strictClassName) {
+					$this->strictClassName = get_class($obj);
+					continue;
+				}
+				if (get_class($obj) != $this->strictClassName) {
+					throw new DStructGeneralException("ObjCollection::setStrictMode() - Collection already contains mixed classes");
+				}
+			}
+		}
 		$this->strictMode = true;
 	}
-
+	
+	/**
+	 * Shift an object off the start of the collection
+	 *
+	 * @return object
+	 */
+	public function shift(): object
+	{
+		return array_shift($this->objs);
+	}
+	
+	public function unshift(object $obj): void
+	{
+		// we only want one copy in this collection!
+		// remove will just return false if it doesn't exist
+		$this->remove($obj);
+		$key = $this->generateKey($obj);
+		$toAdd = [
+			$key => $obj
+		];
+		$this->objs = $toAdd + $this->objs;
+	}
+	
 	/**
 	 * Sorts objects by attribute or return from a method.
 	 *
@@ -379,7 +445,7 @@ abstract class ObjCollection implements \Iterator, \Countable
 			'params' => $params,
 			'astime' => $astime
 		);
-
+		
 		// sort the object
 		// cant just pass "method()", so we need to use 2 different callbacks to sort
 		if (substr($element, - 2, 2) == '()') { // if ends in () sort by method
@@ -395,20 +461,20 @@ abstract class ObjCollection implements \Iterator, \Countable
 				"csort_cmp_attribute"
 			));
 		}
-
+		
 		// prevent warning if no $objs found
 		$temparray = array();
-
+		
 		// rebuild keys
 		foreach ($this->objs as $obj) {
 			$temparray[$obj->getID()] = $obj;
 		}
 		$this->objs = $temparray;
-
+		
 		unset($temparray);
 		unset($csort_cmp);
 	}
-
+	
 	// =================== SORT - End ==================================
 	/**
 	 * Get previous object in collection.
@@ -419,7 +485,7 @@ abstract class ObjCollection implements \Iterator, \Countable
 	{
 		prev($this->objs);
 	}
-
+	
 	// extends iterator, so need...
 	/**
 	 * (non-PHPdoc)
@@ -430,7 +496,7 @@ abstract class ObjCollection implements \Iterator, \Countable
 	{
 		return (! is_null(key($this->objs)));
 	}
-
+	
 	/**
 	 * (non-PHPdoc)
 	 *
@@ -440,7 +506,7 @@ abstract class ObjCollection implements \Iterator, \Countable
 	{
 		reset($this->objs);
 	}
-
+	
 	/**
 	 * (non-PHPdoc)
 	 *
@@ -451,7 +517,7 @@ abstract class ObjCollection implements \Iterator, \Countable
 	{
 		return current($this->objs);
 	}
-
+	
 	/**
 	 * (non-PHPdoc)
 	 *
@@ -462,7 +528,7 @@ abstract class ObjCollection implements \Iterator, \Countable
 	{
 		return key($this->objs);
 	}
-
+	
 	/**
 	 * (non-PHPdoc)
 	 *
