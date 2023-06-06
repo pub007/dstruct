@@ -1,0 +1,6 @@
+parameters:
+    scanFiles:
+    level: 0
+    paths:
+      - src
+    ignoreErrors:
