@@ -2,9 +2,6 @@
 namespace pub007\dstruct;
 
 /**
- * ObjCollection class
- */
-/**
  * Provides functionality for Object Collections.
  *
  * Any objects used with this class must support Object::getID().
@@ -125,7 +122,7 @@ abstract class ObjCollection implements \Iterator, \Countable
 	/**
 	 * Clear the collection.
 	 */
-	protected function clear()
+	public function clear(): void
 	{
 		$this->objs = [];
 	}
@@ -172,16 +169,14 @@ abstract class ObjCollection implements \Iterator, \Countable
 	/**
 	 * Returns the first object in the collection.
 	 *
-	 * @return object|false
+	 * @return ?object
 	 */
-	public function getFirst()
+	public function getFirst(): ?object
 	{
 		if (! $this->count()) {
-			return false;
+			return null;
 		}
-		foreach ($this->objs as $obj) {
-			return $obj;
-		}
+		return $this->objs[array_key_first($this->objs)];
 	}
 	
 	protected function generateKey(object $obj): string
