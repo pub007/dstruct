@@ -47,7 +47,7 @@ abstract class ObjCollection implements Iterator
 	 *
 	 * @var array
 	 */
-	public $objs = array();
+	public $objs = [];
 
 	/**
 	 * Array of objects.
@@ -88,7 +88,6 @@ abstract class ObjCollection implements Iterator
 			throw new DStructGeneralException("ObjCollection::add() - getID() must return string or integer. Returned type: " . gettype($id));
 		}
 		if ($this->exists($obj)) {
-			throw new DStructGeneralException('ObjCollection::add() - Attempting to add an object which already exists. ID:' . $obj->getID());
 			return false;
 		}
 		$this->objs[$id] = $obj;
@@ -105,16 +104,14 @@ abstract class ObjCollection implements Iterator
 	 *        	Object, or its ID
 	 * @return boolean
 	 */
-	public function remove($obj)
+	public function remove($obj): bool
 	{
 		$objid = (is_object($obj)) ? $obj->getID() : $obj;
 		if ($this->exists($objid)) {
 			unset($this->objs[$objid]);
 			return true;
-		} else {
-			throw new DStructGeneralException('ObjCollection::remove() - Attempting to remove an object which is not part of the collection');
-			return false;
 		}
+		return false;
 	}
 
 	/**
@@ -122,7 +119,7 @@ abstract class ObjCollection implements Iterator
 	 */
 	protected function clear()
 	{
-		$this->objs = array();
+		$this->objs = [];
 	}
 
 	/**
@@ -131,11 +128,12 @@ abstract class ObjCollection implements Iterator
 	 * @param mixed $obj
 	 *        	Object, or it's ID
 	 * @return boolean
+	 * @throws DStructGeneralException
 	 */
-	public function exists($obj)
+	public function exists($obj): bool
 	{
 		if (! is_object($obj)) {
-			throw new DStructGeneralException("ObjCollection::exists() - expecting Object. Found " . gettype($obj));
+			throw new DStructGeneralException("ObjCollection::exists() - expecting Object. Received " . gettype($obj));
 		}
 		$id = (is_object($obj)) ? $obj->getID() : $obj;
 		if (! is_string($id) && ! is_integer($id)) {
@@ -150,13 +148,12 @@ abstract class ObjCollection implements Iterator
 	 * @param integer $id
 	 * @return object|false
 	 */
-	public function getByID($id)
+	public function getByID(int $id): mixed
 	{
 		if (array_key_exists($id, $this->objs)) {
 			return $this->objs[$id];
-		} else {
-			return false;
 		}
+		return false;
 	}
 
 	/**
@@ -164,7 +161,7 @@ abstract class ObjCollection implements Iterator
 	 *
 	 * @return object|false
 	 */
-	public function getFirst()
+	public function getFirst(): mixed
 	{
 		if (! $this->count()) {
 			return false;
@@ -217,12 +214,12 @@ abstract class ObjCollection implements Iterator
 					break;
 			}
 		} else {
-			if ($keya > $keyb)
+			if ($keya > $keyb) {
 				return $csort_cmp['direction'];
-
-			if ($keya < $keyb)
+			}
+			if ($keya < $keyb) {
 				return - 1 * $csort_cmp['direction'];
-
+			}
 			return 0;
 		}
 	}
@@ -234,7 +231,7 @@ abstract class ObjCollection implements Iterator
 	 * @param object $b
 	 * @return integer 0 or 1
 	 */
-	private static function csort_cmp_attribute(&$a, &$b)
+	private static function csort_cmp_attribute(&$a, &$b): int
 	{
 		global $csort_cmp;
 
@@ -259,12 +256,12 @@ abstract class ObjCollection implements Iterator
 					break;
 			}
 		} else {
-			if ($keya > $keyb)
+			if ($keya > $keyb) {
 				return $csort_cmp['direction'];
-
-			if ($a->$keya < $keyb)
+			}
+			if ($a->$keya < $keyb) {
 				return - 1 * $csort_cmp['direction'];
-
+			}
 			return 0;
 		}
 	}
@@ -363,7 +360,7 @@ abstract class ObjCollection implements Iterator
 	 *
 	 * @return mixed object or false.
 	 */
-	public function prev()
+	public function prev(): mixed
 	{
 		return prev($this->objs);
 	}
