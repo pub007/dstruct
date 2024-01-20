@@ -1,9 +1,6 @@
-F<?php
+<?php
 namespace pub007\dstruct;
 
-/**
- * ObjCollection class
- */
 /**
  * Provides functionality for Object Collections.
  *
@@ -23,25 +20,27 @@ namespace pub007\dstruct;
  * </code>
  * <br />
  *
- * @package dstruct_common
+ * @author David Lidstone
+ * @package pub007/dstruct
  */
-abstract class ObjCollection implements Iterator
+abstract class ObjCollection implements \Iterator, \Countable
 {
-
+	
 	/**
 	 * Sort ascending.
 	 *
 	 * @var integer
 	 */
 	const SORT_OBJECTS_ASC = 1;
-
+	
 	/**
+	 *
 	 * Sort descending.
 	 *
 	 * @var integer
 	 */
 	const SORT_OBJECTS_DESC = - 1;
-
+	
 	/**
 	 * Stores objects.
 	 *
@@ -49,6 +48,10 @@ abstract class ObjCollection implements Iterator
 	 */
 	public $objs = [];
 
+	protected $strictClassName = null;
+	
+	protected $strictMode = false;
+	
 	/**
 	 * Array of objects.
 	 *
@@ -58,7 +61,7 @@ abstract class ObjCollection implements Iterator
 	{
 		return $this->objs;
 	}
-
+	
 	/**
 	 * Number of objects currently in collection
 	 *
@@ -68,84 +71,92 @@ abstract class ObjCollection implements Iterator
 	{
 		return count($this->objs);
 	}
-
+	
 	/**
 	 * Add an object to the collection.
 	 *
-	 * If the object exists, a DStructGeneralException will be thrown
+	 * Returns true if successful or the object already exists.
+	 * If the collection is set to strict mode, checks the object is of the correct
+	 * type. If not, and Exception will be thrown.
+	 * If in strict mode but this is the first object added, the collection will
+	 * now be locked to only accept the same type of object.
 	 *
-	 * @throws DStructGeneralException
+	 * @throws \Exception
 	 * @param object $obj
 	 * @return boolean
 	 */
-	public function add($obj)
+	public function add(object $obj): bool
 	{
-		if (! is_object($obj)) {
-			throw new DStructGeneralException('ObjCollection::add() - Expecting object');
-		}
-		$id = $obj->getID();
-		if (! is_integer($id) && ! is_string($id)) {
-			throw new DStructGeneralException("ObjCollection::add() - getID() must return string or integer. Returned type: " . gettype($id));
-		}
 		if ($this->exists($obj)) {
-			return false;
+			return true;
 		}
-		$this->objs[$id] = $obj;
+		$key = $this->generateKey($obj); // does strict checks
+		$this->objs[$key] = $obj;
 		return true;
 	}
-
+	
 	/**
 	 * Remove an object from the collection.
 	 *
-	 * If the object is not in the collection, a DStructGeneralException will be thrown
+	 * If the object is not in the collection, an \Exception will be thrown
 	 *
-	 * @throws DStructGeneralException
+	 * @throws \Exception
 	 * @param mixed $obj
 	 *        	Object, or its ID
 	 * @return boolean
 	 */
-	public function remove($obj): bool
+	public function remove(mixed $member, string $className = ''): bool
 	{
-		$objid = (is_object($obj)) ? $obj->getID() : $obj;
-		if ($this->exists($objid)) {
-			unset($this->objs[$objid]);
+		if ($this->exists($member, $className)) {
+			if (is_object($member)) {
+				$key = $this->generateKey($member);
+			} else {
+				$key = $className . "_" . $member;
+			}
+			unset($this->objs[$key]);
 			return true;
 		}
 		return false;
 	}
-
+	
 	/**
 	 * Clear the collection.
 	 */
-	protected function clear()
+	public function clear(): void
 	{
 		$this->objs = [];
 	}
-
+	
 	/**
 	 * Test whether an object exists in the collection.
 	 *
-	 * @param mixed $obj
-	 *        	Object, or it's ID
+	 * @param mixed $member
+	 *        	Object, or its ID
+	 * @param string $className
+	 *        	Required if collection is set to strict
 	 * @return boolean
 	 * @throws DStructGeneralException
 	 */
-	public function exists($obj): bool
+	public function exists($member, string $className = ''): bool
 	{
-		if (! is_object($obj)) {
-			throw new DStructGeneralException("ObjCollection::exists() - expecting Object. Received " . gettype($obj));
+		if (is_object($member)) {
+			$key = $this->generateKey($member);
+		} else {
+			if ($this->strictClassName && ! $className) {
+				throw new DStructGeneralException("ObjCollection::exists() - className is required if collection is set to strict");
+			}
+			if (! is_string($member) && ! is_integer($member)) {
+				throw new DStructGeneralException("ObjCollection::exists() - member must return string or integer. Returned type: " . gettype($member));
+			}
+			$key = $className . "_" . $member;
 		}
-		$id = (is_object($obj)) ? $obj->getID() : $obj;
-		if (! is_string($id) && ! is_integer($id)) {
-			throw new DStructGeneralException("ObjCollection::add() - getID() must return string or integer. Returned type: " . gettype($id));
-		}
-		return (array_key_exists($id, $this->objs)) ? true : false;
+		return (array_key_exists($key, $this->objs)) ? true : false;
 	}
-
+	
 	/**
 	 * Returns an object from the collection based on its ID.
 	 *
-	 * @param integer $id
+	 * @param integer|string $id
 	 * @return object|false
 	 */
 	public function getByID(int $id): mixed
@@ -155,24 +166,49 @@ abstract class ObjCollection implements Iterator
 		}
 		return false;
 	}
-
+	
 	/**
 	 * Returns the first object in the collection.
 	 *
-	 * @return object|false
+	 * @return ?object
 	 */
-	public function getFirst(): mixed
+	public function getFirst(): ?object
 	{
 		if (! $this->count()) {
-			return false;
+			return null;
 		}
-		foreach ($this->objs as $obj) {
-			return $obj;
-		}
+		return $this->objs[array_key_first($this->objs)];
 	}
-
+	
+	protected function generateKey(object $obj): string
+	{
+		$id = $obj->getID();
+		$className = get_class($obj);
+		
+		if (! is_integer($id) && ! is_string($id)) {
+			throw new DStructGeneralException("ObjCollection::generateKey() - getID() must return string or integer. Returned type: " . gettype($id));
+		}
+		
+		if ($this->strictMode) {
+			if (! $this->strictClassName) { // set the strict class to the first class we see
+				$this->strictClassName = get_class($obj);
+			} else {
+				if ($this->strictClassName != $className) {
+					throw new DStructGeneralException("ObjCollection::generateKey() - Strict Class Name did not match. Received [$className]");
+				}
+			}
+		}
+		
+		return $className . "_" . $id;
+	}
+	
+	public function isStrictMode(): bool
+	{
+		return $this->strictMode;
+	}
+	
 	// ================== SORT - Sort Objects by attribute or method ===========
-
+	
 	/**
 	 * Callback used by usort in {@link sortObjects()} to sort by the return from an objects method.
 	 *
@@ -184,7 +220,7 @@ abstract class ObjCollection implements Iterator
 	{
 		global $csort_cmp;
 		$paramstring = '';
-
+		
 		if ($csort_cmp['params']) {
 			foreach ($csort_cmp['params'] as $param) {
 				$paramstring .= $param . ', ';
@@ -192,15 +228,15 @@ abstract class ObjCollection implements Iterator
 			// remove last ', '
 			$paramstring = substr($paramstring, 0, strlen($paramstring) - 2);
 		}
-
+		
 		$keya = $a->$csort_cmp['key']($paramstring);
 		$keyb = $b->$csort_cmp['key']($paramstring);
-
+		
 		if ($csort_cmp['astime']) {
 			$keya = strtotime($keya);
 			$keyb = strtotime($keyb);
 		}
-
+		
 		if ($csort_cmp['caseinsensitive'] && $csort_cmp['astime'] == false) {
 			switch ($result = strcasecmp($keya, $keyb)) {
 				case $result == 0:
@@ -223,7 +259,7 @@ abstract class ObjCollection implements Iterator
 			return 0;
 		}
 	}
-
+	
 	/**
 	 * Callback used by usort in {@link sortObjects()} to sort by objects attributes
 	 *
@@ -234,15 +270,15 @@ abstract class ObjCollection implements Iterator
 	private static function csort_cmp_attribute(&$a, &$b): int
 	{
 		global $csort_cmp;
-
+		
 		$keya = $a->$csort_cmp['key'];
 		$keyb = $b->$csort_cmp['key'];
-
+		
 		if ($csort_cmp['astime']) {
 			$keya = strtotime($keya);
 			$keyb = strtotime($keyb);
 		}
-
+		
 		if ($csort_cmp['caseinsensitive'] && $csort_comp['astime'] == false) {
 			switch ($result = strcasecmp($keya, $keyb)) {
 				case $result == 0:
@@ -265,7 +301,88 @@ abstract class ObjCollection implements Iterator
 			return 0;
 		}
 	}
-
+	
+	public function getStrictClassName(): ?string
+	{
+		return $this->strictClassName;
+	}
+	
+	/**
+	 * Pop the object off the end of the collection
+	 *
+	 * @param Object $obj
+	 */
+	public function pop(): object
+	{
+		return array_pop($this->objs);
+	}
+	
+	/**
+	 *
+	 * @see ObjCollection::add()
+	 */
+	public function push(object $obj): bool
+	{
+		return $this->add($obj);
+	}
+	
+	public function setStrictClassName(string $name)
+	{
+		if ($this->strictClassName && $this->strictClassName != $name) {
+			throw new DStructGeneralException("ObjCollection::setStrictClassName() - Strict Class Name already set to [{$this->strictClassName}] Received [$name]");
+		}
+		// if strict class is set on a collection which is already populated,
+		// ensure that there are no incorrect objects in the collection
+		foreach ($this->objs as $obj) {
+			if (get_class($obj) != $name) {
+				throw new DStructGeneralException("ObjCollection::setStrictClassName() - Collection already contains mixed classes");
+			}
+		}
+		$this->strictMode = true;
+		$this->strictClassName = $name;
+	}
+	
+	public function setStrictMode(): void
+	{
+		if ($this->strictMode) {
+			return;
+		}
+		if (count($this->objs) && ! $this->strictClassName) {
+			foreach ($this->objs as $obj) {
+				if (! $this->strictClassName) {
+					$this->strictClassName = get_class($obj);
+					continue;
+				}
+				if (get_class($obj) != $this->strictClassName) {
+					throw new DStructGeneralException("ObjCollection::setStrictMode() - Collection already contains mixed classes");
+				}
+			}
+		}
+		$this->strictMode = true;
+	}
+	
+	/**
+	 * Shift an object off the start of the collection
+	 *
+	 * @return object
+	 */
+	public function shift(): object
+	{
+		return array_shift($this->objs);
+	}
+	
+	public function unshift(object $obj): void
+	{
+		// we only want one copy in this collection!
+		// remove will just return false if it doesn't exist
+		$this->remove($obj);
+		$key = $this->generateKey($obj);
+		$toAdd = [
+			$key => $obj
+		];
+		$this->objs = $toAdd + $this->objs;
+	}
+	
 	/**
 	 * Sorts objects by attribute or return from a method.
 	 *
@@ -324,7 +441,7 @@ abstract class ObjCollection implements Iterator
 			'params' => $params,
 			'astime' => $astime
 		);
-
+		
 		// sort the object
 		// cant just pass "method()", so we need to use 2 different callbacks to sort
 		if (substr($element, - 2, 2) == '()') { // if ends in () sort by method
@@ -340,81 +457,81 @@ abstract class ObjCollection implements Iterator
 				"csort_cmp_attribute"
 			));
 		}
-
+		
 		// prevent warning if no $objs found
 		$temparray = array();
-
+		
 		// rebuild keys
 		foreach ($this->objs as $obj) {
 			$temparray[$obj->getID()] = $obj;
 		}
 		$this->objs = $temparray;
-
+		
 		unset($temparray);
 		unset($csort_cmp);
 	}
-
+	
 	// =================== SORT - End ==================================
 	/**
 	 * Get previous object in collection.
 	 *
 	 * @return mixed object or false.
 	 */
-	public function prev(): mixed
+	public function prev(): void
 	{
-		return prev($this->objs);
+		prev($this->objs);
 	}
-
+	
 	// extends iterator, so need...
 	/**
 	 * (non-PHPdoc)
 	 *
 	 * @see Iterator::valid()
 	 */
-	public function valid()
+	public function valid(): bool
 	{
 		return (! is_null(key($this->objs)));
 	}
-
+	
 	/**
 	 * (non-PHPdoc)
 	 *
 	 * @see Iterator::rewind()
 	 */
-	public function rewind()
+	public function rewind(): void
 	{
 		reset($this->objs);
 	}
-
+	
 	/**
 	 * (non-PHPdoc)
 	 *
 	 * @see Iterator::current()
 	 */
+	#[\ReturnTypeWillChange]
 	public function current()
 	{
 		return current($this->objs);
 	}
-
+	
 	/**
 	 * (non-PHPdoc)
 	 *
 	 * @see Iterator::key()
 	 */
+	#[\ReturnTypeWillChange]
 	public function key()
 	{
 		return key($this->objs);
 	}
-
+	
 	/**
 	 * (non-PHPdoc)
 	 *
 	 * @see Iterator::next()
 	 */
-	public function next()
+	public function next(): void
 	{
-		return next($this->objs);
+		next($this->objs);
 	}
 }
-
-?>
