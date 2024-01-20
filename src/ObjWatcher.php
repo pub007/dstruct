@@ -9,7 +9,7 @@ namespace pub007\dstruct;
  *
  * Helps prevent duplication of objects within the system, preventing
  * bugs with overwriting changes etc.
- * All watched objects should return a unique string (usually it will
+ * All watched objects of a class should return a unique string (usually it will
  * actually be an integer, but strings are supported). via a getID()
  * method.
  *
@@ -23,7 +23,7 @@ class ObjWatcher
 	 *
 	 * @var array
 	 */
-	private static $objs = array();
+	private static $objs = [];
 
 	/**
 	 * Times watched objects were found.
@@ -51,7 +51,7 @@ class ObjWatcher
 	 * @return integer
 	 * @todo changed - needs checking
 	 */
-	public static function getObjectCount()
+	public static function getObjectCount(): int
 	{
 		return count(self::$objs);
 	}
@@ -61,7 +61,7 @@ class ObjWatcher
 	 *
 	 * @return integer
 	 */
-	public static function getCacheHits()
+	public static function getCacheHits(): int
 	{
 		return self::$cachehits;
 	}
@@ -74,7 +74,7 @@ class ObjWatcher
 	 * @param object $obj
 	 * @return string
 	 */
-	private static function globalKey($obj)
+	private static function globalKey(object $obj): string
 	{
 		$key = get_class($obj) . '.' . $obj->getID();
 		return $key;
@@ -85,7 +85,7 @@ class ObjWatcher
 	 *
 	 * @param object $obj
 	 */
-	public static function add($obj)
+	public static function add(object $obj)
 	{
 		$globalkey = self::globalKey($obj);
 		self::$objs[$globalkey] = $obj;
@@ -101,7 +101,7 @@ class ObjWatcher
 	 * @param string $id
 	 * @return mixed The object, if it is found, or false.
 	 */
-	public static function exists($classname, $id)
+	public static function exists(string $classname, string $id): mixed
 	{
 		$key = $classname . '.' . $id;
 		if (array_key_exists($key, self::$objs)) {
@@ -117,15 +117,13 @@ class ObjWatcher
 	 * @param object $obj
 	 * @return boolean True on success, false if object not found.
 	 */
-	public static function remove($obj)
+	public static function remove(object $obj): bool
 	{
 		$key = self::globalKey($obj);
 		if (array_key_exists($key, self::$objs)) {
 			unset(self::$objs[$key]);
 			return true;
-		} else {
-			return false;
 		}
+		return false;
 	}
 }
-?>
