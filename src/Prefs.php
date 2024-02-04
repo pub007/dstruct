@@ -16,7 +16,7 @@ class Prefs {
 	/**
 	 * @var array Properties held by the class
 	 */
-	private $props = array();
+	private $props = [];
 	
 	
 	/**

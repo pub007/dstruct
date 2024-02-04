@@ -79,10 +79,7 @@ protected function __construct(string $cacheName) {
 	}
 	// if no connection name given then use first element
 	if (!$cacheName) {
-		// $cacheName = array_key_first($config); // after php7.4
-		foreach ($config as $cacheName => $var) {
-			break;
-		}
+		$cacheName = array_key_first($config);
 	}
 	
 	if (!$config = $config[$cacheName]) {
