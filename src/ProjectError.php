@@ -5,7 +5,7 @@ namespace pub007\dstruct;
  */
 /**
  * Aids collation of error messages, and helps test whether errors exist.
- * 
+ *
  * Simple wrapper around an array.
  * Typically useful for processing user input errors.<br>
  * Example:
@@ -23,88 +23,113 @@ namespace pub007\dstruct;
  * Works well with {@link Format::asMessage()} which  can output a CSS formated 'error list'.
  * @package dstruct_common
  */
-class ProjectError implements Iterator {
-	
+class ProjectError implements \Iterator {
+
 	/**
 	 * Array containing any errors
 	 * @var array
 	 */
-	private $errors = array();
-	
+	private $errors = [];
+
 	/**
 	 * Add an error.
-	 * 
+	 *
 	 * Fails if there is no actual error to add, which avoids empty
 	 * error strings being displayed to users (e.g. when using FileUploader
 	 * it is easy to introduce a 'non-error'
 	 *@param string
 	 *@return boolean false if $error evaluates to false and no error is added
 	 */
-	public function addError($error) {
+	public function addError($error): bool
+	{
 		if ($error) {
 			$this->errors[] = $error;
 			return true;
 		}
 		return false;
 	}
-	
+
 	/**
 	 *Are any errors stored in the object?
 	 *@return boolean
 	 */
-	public function isErrors() {return (sizeof($this->errors) > 0)? true:false;}
-	
+	public function isErrors(): bool
+	{
+		return (sizeof($this->errors) > 0)? true : false;
+	}
+
 	/**
 	 *Clears any errors stored in the object.
 	 */
-	public function clear() {$errors = array();}
-	
+	public function clear(): void
+	{
+		$errors = array();
+	}
+
 	/**
 	 * The current number of errors.
 	 * @return integer
 	 */
-	public function count() {return count($this->errors);}
-	
+	public function count(): int
+	{
+		return count($this->errors);
+	}
+
 	/**
 	 *Get any errors stored in the object.
 	 *@return array
 	 */
-	public function getErrors() {
+	public function getErrors(): array
+	{
 		if (count($this->errors) > 0) {
 			return $this->errors;
 		} else {
 			return false;
 		}
 	}
-	
+
 	/**
 	 * (non-PHPdoc)
-	 * @see Iterator::valid()
+	 * @see \Iterator::valid()
 	 */
-	public function valid() {return (!is_null(key($this->errors)));}
-	
+	public function valid(): bool
+	{
+		return (!is_null(key($this->errors)));
+	}
+
 	/**
 	 * (non-PHPdoc)
-	 * @see Iterator::rewind()
+	 * @see \Iterator::rewind()
 	 */
-	public function rewind() {reset($this->errors);}
-	
+	public function rewind(): void
+	{
+		reset($this->errors);
+	}
+
 	/**
 	 * (non-PHPdoc)
-	 * @see Iterator::current()
+	 * @see \Iterator::current()
 	 */
-	public function current() {return current($this->errors);}
-	
+	public function current(): mixed
+	{
+		return current($this->errors);
+	}
+
 	/**
 	 * (non-PHPdoc)
-	 * @see Iterator::key()
+	 * @see \Iterator::key()
 	 */
-	public function key() {return key($this->errors);}
-	
+	public function key(): mixed
+	{
+		return key($this->errors);
+	}
+
 	/**
 	 * (non-PHPdoc)
-	 * @see Iterator::next()
+	 * @see \Iterator::next()
 	 */
-	public function next() {return next($this->errors);}
+	public function next(): void
+	{
+		next($this->errors);
+	}
 }
-?>

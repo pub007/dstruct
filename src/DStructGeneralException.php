@@ -7,7 +7,7 @@ namespace pub007\dstruct;
  * General exception thrown by DStruct.
  * @package dstruct_common
  */
-class DStructGeneralException extends Exception {
+class DStructGeneralException extends \Exception {
 
 /**
  * Formats exception output in a way which is easier to read in a browser.
