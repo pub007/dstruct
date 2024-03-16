@@ -37,15 +37,21 @@ class ProjectError implements \Iterator {
 	 * Fails if there is no actual error to add, which avoids empty
 	 * error strings being displayed to users (e.g. when using FileUploader
 	 * it is easy to introduce a 'non-error'
-	 *@param string
+	 *@param string|array
 	 *@return boolean false if $error evaluates to false and no error is added
 	 */
-	public function addError($error): bool
+	public function addError(mixed $error): bool
 	{
+		if (is_array($error)) {
+			$this->errors = array_merge($this->errors, $error);
+			return true;
+		}
+
 		if ($error) {
 			$this->errors[] = $error;
 			return true;
 		}
+
 		return false;
 	}
 
