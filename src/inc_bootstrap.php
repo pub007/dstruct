@@ -2,12 +2,10 @@
 /**
  * Bootstrap file for DStruct
  */
-/**
- *
- */
+namespace pub007\dstruct;
+
 define('APP_ROOT', realpath(dirname(__FILE__) . '/../..//') . '/');
 
-require_once APP_ROOT.'lib/clsPrefs.php';
 $dstruct_prefs = Prefs::gi();
 
 // define DSTRUCT_TIMER as true to initiate timing. Misses the initial setup so will not be completely accurate
@@ -94,39 +92,6 @@ function dstruct_shutdown_fn() {
 		
 		$smtp->setBody($body);
 		$smtp->send();
-	}
-}
-
-/**
- * DStruct Autoloader.
- * 
- * Attempts to autoload classes and then caches the results. See the
- * 'autoloader_directories' property defined in the class constructor
- * of Prefs for more information.
- * @param string $class_name
- */
-function dstruct_autoloader($class_name) {
-	$prefs = Prefs::gi();
-	$cache = $prefs->get('cache');
-	$key = Prefs::APP_NAME . "_autoldr_$class_name";
-	
-	if ($cache->hasServer()) {
-		if ($path = $cache->get($key)) {
-			require_once($path);
-			return;
-		}
-	}
-	
-	$directories = $prefs->get('autoloader_directories');
-   
-	//for each directory
-	foreach($directories as $directory) {
-		$path = APP_ROOT."lib/$directory/cls$class_name.php";
-		if(file_exists($path)) {
-			require_once($path);
-			if ($cache->hasServer()) {$cache->set($key, $path);}
-			return;
-		}
 	}
 }
 
