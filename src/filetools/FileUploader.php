@@ -101,6 +101,8 @@ class FileUploader
 	 */
 	private $requirefile = false;
 
+	private ?S3FileHandler $s3handler = null;
+
 	/**
 	 * PHP's possible upload errors.
 	 *
@@ -116,6 +118,10 @@ class FileUploader
 		UPLOAD_ERR_CANT_WRITE => 'Failed to write file to disk.',
 		UPLOAD_ERR_EXTENSION => 'File upload stopped by extension.'
 	];
+
+	public function __construct(S3FileHandler $s3handler = null) {
+		$this->s3handler = $s3handler;
+	}
 
 	public function process(string $inputField): array
 	{

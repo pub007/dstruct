@@ -1,7 +1,10 @@
 <?php
+
 namespace pub007\dstruct\filetools;
 
 use Prefs;
+use Aws\S3\S3Client;
+use Aws\Exception\AwsException;
 
 /**
  *
@@ -9,28 +12,38 @@ use Prefs;
  *
  */
 class S3FileHandler {
-	use Aws\S3\S3Client;
-	use Aws\Exception\AwsException;
-
 	private $s3;
 	private $bucketName;
 
-	public function __construct(string $bucketName, string $region = null, string $accessKey = null, string $secretKey = null) {
+	public function __construct(
+			string $bucketName,
+			string $region = null,
+			string $accessKey = null,
+			string $secretKey = null,
+			string $cacertPath = null
+		) {
 		// Set up AWS credentials and S3 client
 		$this->bucketName = $bucketName;
 
-		$region = $region ?? Prefs::gi()->get('s3-bucket-region');
-		$accessKey = $accessKey ?? Prefs::gi()->get('s3-access-key');
-		$secretKey = $secretKey ?? Prefs::gi()->get('s3-secret-key');
-
-		$this->s3 = new S3Client([
+		$s3Config = [
 			'version' => 'latest',
-			'region' => $region, // Replace with your S3 bucket region
+			'region' => $region, // e.g eu-west-2
 			'credentials' => [
 				'key' => $accessKey, // AWS access key
 				'secret' => $secretKey, // AWS secret key
 			]
-		]);
+		];
+
+		if ($cacertPath) {
+			$s3Config['http'] = [
+				'verify' => true,
+				'curl' => [
+					CURLOPT_CAINFO => $cacertPath,
+				],
+			];
+		}
+
+		$this->s3 = new S3Client($s3Config);
 	}
 
 	public function uploadFile(string $fileKey, string $filePath) {
