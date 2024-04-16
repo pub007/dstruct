@@ -6,7 +6,7 @@ class DocStore
 
 	protected static $stores = [];
 
-	public static function gi(string $collection = '', ?string $store)
+	public static function gi(string $collection = '', ?string $store = null)
 	{
 		$store = $store ?? $_ENV['STORE_DEFAULT'] ?? false;
 
