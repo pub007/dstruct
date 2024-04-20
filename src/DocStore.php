@@ -5,6 +5,7 @@ class DocStore
 {
 
 	protected static $stores = [];
+	protected static $defaultStore;
 
 	public static function gi(string $collection = '', ?string $store = null)
 	{
@@ -16,7 +17,8 @@ class DocStore
 
 		if (! isset(self::$stores[$store])) {
 			$storesSettings = Prefs::gi()->get('stores');
-			self::$stores[$store] = new \MongoDB\Client($storesSettings[$store]['connectionString'], [], $storesSettings[$store]['options']);
+			$options = $storesSettings[$store]['options'] ?? [];
+			self::$stores[$store] = new \MongoDB\Client($storesSettings[$store]['connectionString'], [], $options);
 		}
 
 		if ($collection) {
