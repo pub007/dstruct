@@ -119,10 +119,22 @@ class FileUploader
 		UPLOAD_ERR_EXTENSION => 'File upload stopped by extension.'
 	];
 
-	public function __construct(S3FileHandler $s3handler = null) {
+	public function __construct(?S3FileHandler $s3handler = null) {
 		$this->s3handler = $s3handler;
 	}
-
+	
+	/**
+	 * Process any uploaded files from the form
+	 * 
+	 * return [
+	 *     'errors' => [],
+	 *     'files' => 
+	 *     'path' => string
+	 * ]
+	 * 
+	 * @param string $inputField Name of the form field
+	 * @return array
+	 */
 	public function process(string $inputField): array
 	{
 		$rtn = [
@@ -135,6 +147,10 @@ class FileUploader
 
 		if (! $files) {
 			$rtn['errors'][] = 'Unable to find files from the named form';
+			return $rtn;
+		}
+		
+		if ($files['name'][0] == '') {
 			return $rtn;
 		}
 
@@ -204,8 +220,7 @@ class FileUploader
 					continue;
 				}
 			} elseif ($this->storageType === self::STORAGE_TYPE_S3) {
-				// Code to save file to S3
-				// Example: putObject($newFileName, $tmpName)
+				$this->s3handler->uploadFile($fileKey, $this->savePath);
 				// Add error handling if necessary
 			}
 
