@@ -170,11 +170,13 @@ class FileUploader
 			];
 
 			if ($files['error'][$key]) {
-				//$rtn[$name]['error'] = $files['error'][$key];
-				$rtn['files'][$name]['error'] = $this->uploaderrors[$rtn[$name]['error']];
+				$rtn['files'][$key]['error'] = $this->uploaderrors[$files['error'][$key]];
 			}
 
 			$tmpName = $files['tmp_name'][$key];
+			if (!$tmpName) {
+				$tmpName = $files['name'][$key];
+			}
 			$extension = pathinfo($name, PATHINFO_EXTENSION);
 
 			$finfo = new \finfo(FILEINFO_MIME); // return mime type ala mimetype extension
