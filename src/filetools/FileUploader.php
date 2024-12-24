@@ -120,7 +120,10 @@ class FileUploader
 	];
 
 	public function __construct(?S3FileHandler $s3handler = null) {
-		$this->s3handler = $s3handler;
+		if ($s3handler) {
+			$this->s3handler = $s3handler;
+			$this->storageType = self::STORAGE_TYPE_S3;
+		}
 	}
 	
 	/**
@@ -153,8 +156,8 @@ class FileUploader
 		if ($files['name'][0] == '') {
 			return $rtn;
 		}
-
-		if (! $this->checkSavePath()) {
+		
+		if ($this->storageType == self::STORAGE_TYPE_FILESYSTEM && ! $this->checkSavePath()) {
 			$rtn['errors'][] = 'Save path is invalid';
 			return $rtn;
 		}
@@ -222,7 +225,13 @@ class FileUploader
 					continue;
 				}
 			} elseif ($this->storageType === self::STORAGE_TYPE_S3) {
-				$this->s3handler->uploadFile($fileKey, $this->savePath);
+				$result = $this->s3handler->uploadFile($newFileName, $tmpName);
+				
+				if ($result == false) {
+					error_log("Upload failed");
+				} else {
+					error_log("Upload said" . print_r($result, true));
+				}
 				// Add error handling if necessary
 			}
 
