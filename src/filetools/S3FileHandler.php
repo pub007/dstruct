@@ -38,7 +38,7 @@ class S3FileHandler {
 			$s3Config['http'] = [
 				'verify' => true,
 				'curl' => [
-					CURLOPT_CAINFO => $cacertPath,
+					'CURLOPT_CAINFO' => $cacertPath,
 				],
 			];
 		}
