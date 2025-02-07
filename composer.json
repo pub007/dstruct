@@ -20,6 +20,7 @@
 		"aws/aws-sdk-php" : "~3.301",
 		"mongodb/mongodb" : "~1.18",
 		"ext-fileinfo" : "*",
-		"php" : "^8.3.0"
+		"php" : "^8.3.0",
+		"claviska/simpleimage": "^2.5"
 	}
 }
