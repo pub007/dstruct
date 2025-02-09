@@ -21,6 +21,6 @@
 		"mongodb/mongodb" : "~1.18",
 		"ext-fileinfo" : "*",
 		"php" : "^8.3.0",
-		"claviska/simpleimage": "^2.5"
+		"claviska/simpleimage": "~4.2"
 	}
 }
