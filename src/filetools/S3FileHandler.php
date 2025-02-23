@@ -2,7 +2,6 @@
 
 namespace pub007\dstruct\filetools;
 
-use Prefs;
 use Aws\S3\S3Client;
 use Aws\Exception\AwsException;
 
@@ -45,14 +44,37 @@ class S3FileHandler {
 
 		$this->s3 = new S3Client($s3Config);
 	}
-
-	public function uploadFile(string $fileKey, string $filePath) {
+	
+	/**
+	 * Upload a file to S3
+	 * 
+	 * If <var>$filePath</var> is set, the file will be uploaded from the file system.
+	 * if <var>$fileContent</var> is set, the file content should be passed as a string,
+	 * for example from file_get_contents().
+	 * 
+	 * @param string $fileKey Path and Name of the file on S3
+	 * @param string $filePath Path to the file to upload
+	 * @param string $fileContent Content of the file to upload
+	 * @return \Aws\Result|boolean
+	 */
+	public function uploadFile(string $fileKey, string $filePath = '', string $fileContent = null)
+	{
 		try {
-			$result = $this->s3->putObject([
-				'Bucket' => $this->bucketName,
-				'Key' => $fileKey,
-				'SourceFile' => $filePath,
-			]);
+			if ($fileContent) {
+				$result = $this->s3->putObject([
+					'Bucket' => $this->bucketName,
+					'Key' => $fileKey,
+					'Body' => $fileContent,
+                ]);
+
+                return $result;
+            } elseif ($filePath) {
+				$result = $this->s3->putObject([
+					'Bucket' => $this->bucketName,
+					'Key' => $fileKey,
+					'SourceFile' => $filePath,
+				]);
+            }
 
 			return $result;
 		} catch (AwsException $e) {
@@ -61,8 +83,13 @@ class S3FileHandler {
 			return false;
 		}
 	}
-
-	public function getFile($fileKey) {
+	
+	/**
+	 * Get a file from S3
+	 * @param string $fileKey
+	 * @return \Aws\Result|boolean
+	 */
+	public function getFile(string $fileKey) {
 		try {
 			$result = $this->s3->getObject([
 				'Bucket' => $this->bucketName,
@@ -72,17 +99,28 @@ class S3FileHandler {
 			return $result;
 		} catch (AwsException $e) {
 			error_log($e->getMessage());
-			// Handle exception
+				// Handle exceptionn
 			return false;
 		}
 	}
-
-	public function updateFile($fileKey, $filePath) {
+	
+	/**
+     * Update a file in S3
+     * @param string $fileKey
+     * @param string $filePath
+     * @return \Aws\Result|boolean
+     */
+	public function updateFile(string $fileKey, string $filePath) {
 		// To update a file in S3, you can upload a new version of the file with the same key
 		return $this->uploadFile($fileKey, $filePath);
 	}
-
-	public function deleteFile($fileKey) {
+	
+	/**
+     * Delete a file from S3
+     * @param string $fileKey
+     * @return \Aws\Result!boolean
+     */
+	public function deleteFile(string $fileKey) {
 		try {
 			$result = $this->s3->deleteObject([
 				'Bucket' => $this->bucketName,

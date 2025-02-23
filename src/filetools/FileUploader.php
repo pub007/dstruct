@@ -169,7 +169,8 @@ class FileUploader
 				'error' => null,
 				'originalName' => $name,
 				'newName' => null,
-				'size' => $files['size'][$key]
+				'size' => $files['size'][$key],
+				'mimetype' => null
 			];
 
 			if ($files['error'][$key]) {
@@ -184,6 +185,7 @@ class FileUploader
 
 			$finfo = new \finfo(FILEINFO_MIME); // return mime type ala mimetype extension
 			$mime = $finfo->file($tmpName);
+			$rtn['files'][$key]['mimetype'] = $mime;
 
 			if (!$this->isValidFile($extension, $mime)) {
 				$rtn['files'][$key]['error'] = "File '$name' has invalid extension or MIME type.";
@@ -230,7 +232,7 @@ class FileUploader
 				if ($result == false) {
 					error_log("Upload failed");
 				} else {
-					error_log("Upload said" . print_r($result, true));
+					//error_log("Upload said" . print_r($result, true));
 				}
 				// Add error handling if necessary
 			}
