@@ -130,8 +130,9 @@ class FileUploader
 	 * Process any uploaded files from the form
 	 * 
 	 * return [
-	 *     'errors' => [],
-	 *     'files' => 
+	 *     'isErrors' => bool,  // any errors in the process
+	 *     'errors' => [],  // top level errors.  Each file has its own errors in the files array
+	 *     'files' => [],
 	 *     'path' => string
 	 * ]
 	 * 
@@ -141,9 +142,10 @@ class FileUploader
 	public function process(string $inputField): array
 	{
 		$rtn = [
+			'isErrors' => false,
 			'errors' => [],
 			'files' => [],
-			'path' => []
+			'path' => ''
 		];
 
 		$files = $_FILES[$inputField] ?? false;
@@ -159,6 +161,7 @@ class FileUploader
 		
 		if ($this->storageType == self::STORAGE_TYPE_FILESYSTEM && ! $this->checkSavePath()) {
 			$rtn['errors'][] = 'Save path is invalid';
+			$rtn['isErrors'] = true;
 			return $rtn;
 		}
 
@@ -172,9 +175,12 @@ class FileUploader
 				'size' => $files['size'][$key],
 				'mimetype' => null
 			];
-
+			
+			// any errors for the file are returned in the file array
 			if ($files['error'][$key]) {
 				$rtn['files'][$key]['error'] = $this->uploaderrors[$files['error'][$key]];
+				$rtn['isErrors'] = true;
+				continue;
 			}
 
 			$tmpName = $files['tmp_name'][$key];
@@ -188,7 +194,7 @@ class FileUploader
 			$rtn['files'][$key]['mimetype'] = $mime;
 
 			if (!$this->isValidFile($extension, $mime)) {
-				$rtn['files'][$key]['error'] = "File '$name' has invalid extension or MIME type.";
+				$rtn['files'][$key]['error'] = "File '$name' has invalid extension or MIME type [$extension | $mime].";
 				continue;
 			}
 
@@ -234,7 +240,6 @@ class FileUploader
 				} else {
 					//error_log("Upload said" . print_r($result, true));
 				}
-				// Add error handling if necessary
 			}
 
 			$rtn['files'][$key]['newName'] = $newFileName;
