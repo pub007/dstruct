@@ -57,6 +57,8 @@ class FileUploader
 	private $allowedExtensions = [];
 
 	private $files = [];
+	
+	private $imageTransform = [];
 
 	private $errors = [];
 
@@ -203,6 +205,16 @@ class FileUploader
 			} else {
 				$newFileName = pathinfo($name, PATHINFO_FILENAME) . '.' . $extension;
 			}
+			
+			// example image transform ['maxwidth' => 500, 'maxheight' => 500]
+			// if we have a transform, we need to do it before we save
+			// use SimpleImage to do the transform
+			if ($this->imageTransform) {
+				$image = new SimpleImage();
+				$image->fromFile($tmpName);
+				$image->resize($this->imageTransform['maxWidth'], $this->imageTransform['maxHeight']);
+				$tmpName = $image->toString();
+			}
 
 			if ($this->storageType === self::STORAGE_TYPE_FILESYSTEM) {
 				$destination = $_SERVER['DOCUMENT_ROOT'] . DIRECTORY_SEPARATOR . $this->savePath . $newFileName;
@@ -297,6 +309,18 @@ class FileUploader
 	{
 		$this->requirefile = $bln;
 	}
+	
+	/**
+     * Set the image transform to apply to the file.
+     *
+     * @param array $transform
+     *        	Transform array
+     * @see FileUploader::getImageTransform()
+     */
+	public function setImageTransform(array $transform)
+	{
+		$this->imageTransform = $transform;
+	}
 
 	/**
 	 * Set the new name of the file manually.
@@ -358,6 +382,16 @@ class FileUploader
 	{
 		$this->allowedMimetypes = $mimes;
 		$this->allowedExtensions = $extns;
+	}
+	
+	/**
+	 * Get the settings for the image transform.
+	 * 
+	 * @return array
+	 */
+	public function getImageTransform(): array
+	{
+		return $this->imageTransform;
 	}
 
 	/**
