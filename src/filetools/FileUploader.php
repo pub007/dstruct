@@ -1,6 +1,7 @@
 <?php
 namespace pub007\dstruct\filetools;
 
+use claviska\SimpleImage;
 
 /**
  * Class FileUploader
@@ -212,8 +213,8 @@ class FileUploader
 			if ($this->imageTransform) {
 				$image = new SimpleImage();
 				$image->fromFile($tmpName);
-				$image->resize($this->imageTransform['maxWidth'], $this->imageTransform['maxHeight']);
-				$tmpName = $image->toString();
+				$image->bestFit($this->imageTransform['maxWidth'], $this->imageTransform['maxHeight']);
+				$image->toFile($tmpName);
 			}
 
 			if ($this->storageType === self::STORAGE_TYPE_FILESYSTEM) {
