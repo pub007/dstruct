@@ -18,7 +18,7 @@
 	},
 	"require" : {
 		"aws/aws-sdk-php" : "~3.301",
-		"mongodb/mongodb" : "~1.18",
+		"mongodb/mongodb" : ">=1.18",
 		"ext-fileinfo" : "*",
 		"php" : "^8.3.0",
 		"claviska/simpleimage": "~4.2"

@@ -213,7 +213,13 @@ class FileUploader
 			if ($this->imageTransform) {
 				$image = new SimpleImage();
 				$image->fromFile($tmpName);
-				$image->bestFit($this->imageTransform['maxWidth'], $this->imageTransform['maxHeight']);
+				// we will use the orientation to determine which max size to use first
+				// we cannot use bestFit as it changes the orientation.
+				if ($image->getOrientation() == 'landscape') {
+					$image->resize($this->imageTransform['maxWidth'], null);
+				} else { // portrait and square
+					$image->resize(null, $this->imageTransform['maxHeight']);
+				}
 				$image->toFile($tmpName);
 			}
 
