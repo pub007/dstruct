@@ -190,7 +190,7 @@ class FileUploader
 			if (!$tmpName) {
 				$tmpName = $files['name'][$key];
 			}
-			$extension = pathinfo($name, PATHINFO_EXTENSION);
+			$extension = strtolower(pathinfo($name, PATHINFO_EXTENSION));
 
 			$finfo = new \finfo(FILEINFO_MIME); // return mime type ala mimetype extension
 			$mime = $finfo->file($tmpName);
@@ -202,10 +202,15 @@ class FileUploader
 			}
 
 			if ($this->newname) {
-				$newFileName = $this->newname . '.' . $extension;
+				$safeBase = preg_replace('/[^A-Za-z0-9_-]/', '_', $this->newname);
+				$safeBase = trim($safeBase, '._-');
 			} else {
-				$newFileName = pathinfo($name, PATHINFO_FILENAME) . '.' . $extension;
+				$safeBase = bin2hex(random_bytes(16));
 			}
+			if ($safeBase === '') {
+				$safeBase = bin2hex(random_bytes(16));
+			}
+			$newFileName = $safeBase . '.' . $extension;
 			
 			// example image transform ['maxwidth' => 500, 'maxheight' => 500]
 			// if we have a transform, we need to do it before we save
@@ -269,7 +274,8 @@ class FileUploader
 
 	private function isValidFile(string $extension, string $mime): bool
 	{
-		return in_array($extension, $this->allowedExtensions) && in_array($mime, $this->allowedMimetypes);
+		$allowedExtensions = array_map('strtolower', $this->allowedExtensions);
+		return in_array(strtolower($extension), $allowedExtensions, true) && in_array($mime, $this->allowedMimetypes, true);
 	}
 
 	/**
